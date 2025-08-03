@@ -15,7 +15,7 @@
     firebase init
     ```
     - Select **Hosting**.
-    - Choose your Firebase project (e.g., `hdsvn-coe-management-platform`).
+    - Choose your Firebase project (e.g., `ds-hdsvn-cloud-coe-lab`).
     - Set your public directory (e.g., `public`).
     - Configure as a single-page app if needed.
 
