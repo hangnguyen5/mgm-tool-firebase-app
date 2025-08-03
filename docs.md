@@ -426,7 +426,7 @@ To facilitate forward-looking resource planning, the application will include fo
             - **<span class="ng-star-inserted">Instructions:</span>**<span class="ng-star-inserted"> "Upload the Excel file containing information for all CoE members. The file must contain the required columns (LDAP, Oracle ID, etc.)."</span>
             - **<span class="ng-star-inserted">Template Link:</span>**<span class="ng-star-inserted"> A link to "Download Template" to ensure data format consistency and prevent errors.</span>
             - **<span class="ng-star-inserted">Upload Component:</span>**<span class="ng-star-inserted"> A drag-and-drop area or a standard "Choose File" button.</span>
-            - **<span class="ng-star-inserted">Action Button:</span>**<span class="ng-star-inserted"> A clear "\[Process Member File\]" button.</span>
+            - **<span class="ng-star-inserted">Action Button:</span>**<span class="ng-star-inserted"> A clear "Process Member File" button.</span>
         - **<span class="ng-star-inserted">Section 2: Monthly Utilization</span>**
             
             
@@ -434,7 +434,7 @@ To facilitate forward-looking resource planning, the application will include fo
             - **<span class="ng-star-inserted">Instructions:</span>**<span class="ng-star-inserted"> "Upload the Excel file containing monthly billable hours and utilization for all employees."</span>
             - **<span class="ng-star-inserted">Template Link:</span>**<span class="ng-star-inserted"> A link to "Download Template".</span>
             - **<span class="ng-star-inserted">Upload Component:</span>**<span class="ng-star-inserted"> A separate drag-and-drop area or "Choose File" button.</span>
-            - **<span class="ng-star-inserted">Action Button:</span>**<span class="ng-star-inserted"> A clear "\[Process Utilization File\]" button.</span>
+            - **<span class="ng-star-inserted">Action Button:</span>**<span class="ng-star-inserted"> A clear "Process Utilization File" button.</span>
         - **<span class="ng-star-inserted">Feedback Mechanism:</span>**<span class="ng-star-inserted"> After clicking "Process," the UI will provide immediate feedback: a success message upon completion or a detailed error message if validation fails (e.g., "Error in Member File: Row 25 is missing a value for 'Email'. Please correct the file and re-upload.").</span>
     - **<span class="ng-star-inserted">Sub-View: Key Member Management</span>**
         

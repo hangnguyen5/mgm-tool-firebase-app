@@ -4,108 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CoE Management Platform</title>
-    <style>
-        /* Basic styling for layout structure - Pastel Blue Theme */
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            height: 100%;
-            background-color: #f0f8ff; /* AliceBlue - very light pastel blue */
-        }
-        .app-container {
-            display: flex;
-            height: 100vh;
-        }
-        .sidebar {
-            width: 250px;
-            background-color: #7cb9e8; /* Aero - a soft, medium pastel blue */
-            color: #ffffff;
-            padding-top: 20px;
-        }
-        .sidebar .logo {
-            padding: 0 20px 20px 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #ffffff;
-        }
-        .sidebar nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-        .sidebar nav ul li a {
-            display: block;
-            padding: 15px 20px;
-            color: #f0f8ff;
-            text-decoration: none;
-            border-left: 3px solid transparent;
-            transition: background-color 0.3s, border-left 0.3s;
-        }
-        .sidebar nav ul li a:hover, .sidebar nav ul li a.active {
-            background-color: #6fa8dc; /* Slightly darker blue for hover/active */
-            border-left: 3px solid #ffffff;
-        }
-        .sidebar nav ul .submenu ul {
-            padding-left: 30px;
-            background-color: #72aadd; /* A shade between the main and hover color */
-        }
-        .main-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .top-bar {
-            height: 60px;
-            background-color: #ffffff;
-            border-bottom: 1px solid #d6eaf8; /* Light blue border */
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 0 20px;
-        }
-        .top-bar .user-menu {
-            display: flex;
-            align-items: center;
-            color: #4682b4; /* SteelBlue for text */
-        }
-        .top-bar .notifications {
-            margin-right: 20px;
-            cursor: pointer;
-        }
-        .main-content {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .view {
-            display: none; /* Hidden by default */
-        }
-        .view.active {
-            display: block; /* Shown when active */
-        }
-        h1, h2 {
-            color: #4682b4; /* SteelBlue - a stronger, but still soft blue */
-        }
-        /* Basic card and table styles for demonstration */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; }
-        .filter-bar { display: flex; gap: 15px; margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #ddd; }
-        table { width: 100%; border-collapse: collapse; background: #fff; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #ecf0f1; }
-        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #2980b9; }
-        .upload-section { margin-top: 20px; padding: 20px; border: 1px solid #ddd; background: #fff; }
-        .upload-area { border: 2px dashed #ddd; padding: 40px; text-align: center; margin-top: 10px; }
-    </style>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="js/utils/viewLoader.js"></script>
+    <script src="js/components/navigation.js"></script>
 </head>
 <body>
 
     <div class="app-container">
         <!-- Persistent Left-Hand Navigation Sidebar -->
         <aside class="sidebar">
-            <div class="logo">CoE Management Platform</div>
+            <div class="logo">CoE Management</div>
             <nav>
                 <ul>
                     <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
@@ -115,9 +23,9 @@
                     <li class="submenu">
                         <a href="#settings" class="nav-link">Settings (Admin only)</a>
                         <ul>
-                            <li><a href="#data-import" class="nav-link">Data Import</a></li>
-                            <li><a href="#key-members" class="nav-link">Key Members</a></li>
-                            <li><a href="#notifications" class="nav-link">Notifications</a></li>
+                            <li><a href="#settings-data-import" class="nav-link">Data Import</a></li>
+                            <li><a href="#settings-key-members" class="nav-link">Key Members</a></li>
+                            <li><a href="#settings-notifications" class="nav-link">Notifications</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -135,168 +43,23 @@
 
             <!-- Main Content Area -->
             <main class="main-content">
-
-                <!-- 4.1. Main View: Dashboard (Default Landing Page) -->
-                <section id="dashboard" class="view active">
-                    <h1>Dashboard</h1>
-                    <div class="filter-bar">
-                        <select name="date-range"><option>Date Range</option></select>
-                        <select name="business-unit"><option>Business Unit</option></select>
-                        <select name="practice"><option>Practice</option></select>
-                        <select name="location"><option>Location</option></select>
-                    </div>
-                    <div class="dashboard-grid">
-                        <div class="card"><strong>CoE Member Directory</strong><br><!-- Chart/data here --></div>
-                        <div class="card"><strong>Group Performance</strong><br><!-- Chart/data here --></div>
-                        <div class="card"><strong>Resource Distribution</strong><br><!-- Chart/data here --></div>
-                        <div class="card"><strong>Resource Allocation Tree Chart</strong><br><!-- Chart/data here --></div>
-                    </div>
-                </section>
-
-                <!-- 4.2. View: Resource Planner -->
-                <section id="resource-planner" class="view">
-                    <h1>Resource Planner</h1>
-                    <!-- Two-panel view would be structured here -->
-                    <p>Interactive chart showing each member's project assignments, start/roll-off dates, and utilization percentage on hover.</p>
-                </section>
-
-                <!-- 4.3. View: Member Directory -->
-                <section id="member-directory" class="view">
-                    <h1>Member Directory</h1>
-                    <div class="filter-bar">
-                        <!-- Advanced filtering options here -->
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Business Unit</th>
-                                <!-- etc. -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><a href="#member-profile">John Doe</a></td>
-                                <td>john.doe@example.com</td>
-                                <td>Developer</td>
-                                <td>BU1</td>
-                            </tr>
-                            <!-- More members... -->
-                        </tbody>
-                    </table>
-                </section>
-
-                <!-- 4.4. View: Projects -->
-                <section id="projects" class="view">
-                    <h1>Projects</h1>
-                    <button>+ Add New Project</button>
-                    <div class="projects-list" style="margin-top: 20px;">
-                        <div class="card"><strong>Project Alpha</strong><br>Details...</div>
-                        <div class="card"><strong>Project Beta</strong><br>Details...</div>
-                    </div>
-                </section>
-
-                <!-- 4.5. View: Settings -->
-                <section id="settings" class="view">
-                    <h1>Settings</h1>
-                    <p>The administrative area for application management.</p>
-                </section>
-                
-                <!-- Sub-View: Data Import -->
-                <section id="data-import" class="view">
-                    <h1>Settings: Data Import</h1>
-                    <p>A secure and simple interface for authorized administrators to upload the two core data source files.</p>
-                    
-                    <div class="upload-section">
-                        <h2>Upload CoE Member Data</h2>
-                        <p>Upload the Excel file containing information for all CoE members. The file must contain the required columns (LDAP, Oracle ID, etc.).</p>
-                        <a href="#">Download Template</a>
-                        <div class="upload-area">Drag and drop file here or <button>Choose File</button></div>
-                        <button style="margin-top: 10px;">[Process Member File]</button>
-                    </div>
-
-                    <div class="upload-section">
-                        <h2>Upload Monthly Utilization Data</h2>
-                        <p>Upload the Excel file containing monthly billable hours and utilization for all employees.</p>
-                        <a href="#">Download Template</a>
-                        <div class="upload-area">Drag and drop file here or <button>Choose File</button></div>
-                        <button style="margin-top: 10px;">[Process Utilization File]</button>
-                    </div>
-                    <div id="feedback-message" style="margin-top: 20px; padding: 10px;">
-                        <!-- Feedback messages will appear here -->
-                    </div>
-                </section>
-
-                <!-- Sub-View: Key Member Management -->
-                <section id="key-members" class="view">
-                    <h1>Settings: Key Member Management</h1>
-                    <p>An interface to designate individuals as "Key Members."</p>
-                    <!-- Management UI would go here -->
-                </section>
-
-                <!-- Sub-View: Notification Preferences -->
-                <section id="notifications" class="view">
-                    <h1>Settings: Notification Preferences</h1>
-                    <p>Controls for the automated timesheet reminder emails (TBD).</p>
-                    <!-- Preference controls would go here -->
-                </section>
-
+                <div id="view-container">
+                    <!-- Views will be loaded here -->
+                </div>
             </main>
         </div>
     </div>
-<div id="ai-chat-icon" style="
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  background: #3498db;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(52,152,219,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1000;
-">
-  <!-- AI Assistant Icon -->
-  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white">
-    <path d="M0 0h24v24H0z" fill="none"/>
-    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10c5.52 0 10-4.48 10-10S17.51 2 11.99 2zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-4.5l2.75 1.1V8.4l-2.75 1.1zM16.5 9.5l-2.75-1.1v8.2l2.75-1.1z"/>
-  </svg>
-</div>
+    <div id="ai-chat-icon">
+        <!-- AI Assistant Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white">
+            <path d="M0 0h24v24H0z" fill="none"/>
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10c5.52 0 10-4.48 10-10S17.51 2 11.99 2zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-4.5l2.75 1.1V8.4l-2.75 1.1zM16.5 9.5l-2.75-1.1v8.2l2.75-1.1z"/>
+        </svg>
+    </div>
 
-
-<script>
-    // Basic JavaScript for single-page navigation
-    document.addEventListener('DOMContentLoaded', function() {
-        const links = document.querySelectorAll('.nav-link');
-        const views = document.querySelectorAll('.view');
-
-        links.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href').substring(1);
-
-                // Update active link
-                links.forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-
-                // Update active view
-                views.forEach(view => {
-                    if (view.id === targetId) {
-                        view.classList.add('active');
-                    } else {
-                        view.classList.remove('active');
-                    }
-                });
-            });
-        });
-    });
-</script>
-
+    <!-- Scripts -->
+    <script>
+        // No inline navigation logic here. All view loading is handled by navigation.js and viewLoader.js.
+    </script>
 </body>
 </html>

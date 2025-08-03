@@ -29,3 +29,10 @@
 
 6. **Access your site**  
     - After deployment, Firebase will provide a hosting URL.
+
+7. **Troubleshooting**
+    - To test locally, you could go to the `public/js/utils/viewLoader.js` file and adjust the base path if necessary:
+    ```javascript
+        // To local testing, you might need to adjust this
+        const basePath = window.location.pathname.includes('/public/') ? 'views/' : '/public/views/';
+    ```

@@ -1,0 +1,107 @@
+<section id="member-directory" class="views">
+    <h1>Member Directory</h1>
+    <div class="filter-bar">
+        <select name="business-unit">
+            <option>All Business Units</option>
+            <option>IoT</option>
+            <option>C&D</option>
+            <option>Others</option>
+        </select>
+        <select name="role">
+            <option>All Roles</option>
+            <option>Developer</option>
+            <option>Manager</option>
+            <option>Designer</option>
+        </select>
+        <button class="primary-button">Add Member</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Business Unit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="#member-profile">John Doe</a></td>
+                <td>john.doe@example.com</td>
+                <td>Developer</td>
+                <td>IoT</td>
+            </tr>
+            <tr>
+                <td><a href="#member-profile">Jane Smith</a></td>
+                <td>jane.smith@example.com</td>
+                <td>Manager</td>
+                <td>C&D</td>
+            </tr>
+        </tbody>
+    </table>
+
+<style>
+    .filter-bar {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin: 20px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .filter-bar select {
+        padding: 6px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+    }
+    .primary-button {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: auto;
+    }
+    .primary-button:hover {
+        background-color: #1976D2;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    th {
+        background-color: #f8f9fa;
+        font-weight: 500;
+        color: #666;
+    }
+    td a {
+        color: #2196F3;
+        text-decoration: none;
+    }
+    td a:hover {
+        text-decoration: underline;
+    }
+    @media (max-width: 768px) {
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+</section>
