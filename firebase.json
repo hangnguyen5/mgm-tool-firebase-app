@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "public": "public",
+    "site": "hdsvn-coe-management-platform",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
+
