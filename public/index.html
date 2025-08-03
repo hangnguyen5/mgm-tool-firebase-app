@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoE Management Platform</title>
+    <style>
+        /* Basic styling for layout structure */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            height: 100%;
+            background-color: #f4f7fa;
+        }
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        .sidebar .logo {
+            padding: 0 20px 20px 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .sidebar nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar nav ul li a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        .sidebar nav ul li a:hover, .sidebar nav ul li a.active {
+            background-color: #34495e;
+            border-left: 3px solid #3498db;
+        }
+        .sidebar nav ul .submenu ul {
+            padding-left: 30px;
+            background-color: #233140;
+        }
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-bar {
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .top-bar .user-menu {
+            display: flex;
+            align-items: center;
+        }
+        .top-bar .notifications {
+            margin-right: 20px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .view {
+            display: none; /* Hidden by default */
+        }
+        .view.active {
+            display: block; /* Shown when active */
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        /* Basic card and table styles for demonstration */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 20px; }
+        .filter-bar { display: flex; gap: 15px; margin-bottom: 20px; padding: 15px; background: #fff; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #ecf0f1; }
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #2980b9; }
+        .upload-section { margin-top: 20px; padding: 20px; border: 1px solid #ddd; background: #fff; }
+        .upload-area { border: 2px dashed #ddd; padding: 40px; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Persistent Left-Hand Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">CoE Platform</div>
+            <nav>
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="#resource-planner" class="nav-link">Resource Planner</a></li>
+                    <li><a href="#member-directory" class="nav-link">Member Directory</a></li>
+                    <li><a href="#projects" class="nav-link">Projects</a></li>
+                    <li class="submenu">
+                        <a href="#settings" class="nav-link">Settings (Admin only)</a>
+                        <ul>
+                            <li><a href="#data-import" class="nav-link">Data Import</a></li>
+                            <li><a href="#key-members" class="nav-link">Key Members</a></li>
+                            <li><a href="#notifications" class="nav-link">Notifications</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-container">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="user-menu">
+                    <div class="notifications">[Notifications Icon]</div>
+                    <div class="user-name">[User Name v]</div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+
+                <!-- 4.1. Main View: Dashboard (Default Landing Page) -->
+                <section id="dashboard" class="view active">
+                    <h1>Dashboard</h1>
+                    <div class="filter-bar">
+                        <select name="date-range"><option>Date Range</option></select>
+                        <select name="business-unit"><option>Business Unit</option></select>
+                        <select name="practice"><option>Practice</option></select>
+                        <select name="location"><option>Location</option></select>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="card"><strong>KPIs</strong><br><!-- Chart/data here --></div>
+                        <div class="card"><strong>Group Performance</strong><br><!-- Chart/data here --></div>
+                        <div class="card"><strong>Resource Distribution</strong><br><!-- Chart/data here --></div>
+                        <div class="card"><strong>Resource Allocation Tree Chart</strong><br><!-- Chart/data here --></div>
+                    </div>
+                </section>
+
+                <!-- 4.2. View: Resource Planner -->
+                <section id="resource-planner" class="view">
+                    <h1>Resource Planner</h1>
+                    <!-- Two-panel view would be structured here -->
+                    <p>Interactive Gantt-style chart showing each member's project assignments, start/roll-off dates, and utilization percentage on hover.</p>
+                </section>
+
+                <!-- 4.3. View: Member Directory -->
+                <section id="member-directory" class="view">
+                    <h1>Member Directory</h1>
+                    <div class="filter-bar">
+                        <!-- Advanced filtering options here -->
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Business Unit</th>
+                                <!-- etc. -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a href="#member-profile">John Doe</a></td>
+                                <td>john.doe@example.com</td>
+                                <td>Developer</td>
+                                <td>BU1</td>
+                            </tr>
+                            <!-- More members... -->
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- 4.4. View: Projects -->
+                <section id="projects" class="view">
+                    <h1>Projects</h1>
+                    <button>+ Add New Project</button>
+                    <div class="projects-list" style="margin-top: 20px;">
+                        <div class="card"><strong>Project Alpha</strong><br>Details...</div>
+                        <div class="card"><strong>Project Beta</strong><br>Details...</div>
+                    </div>
+                </section>
+
+                <!-- 4.5. View: Settings -->
+                <section id="settings" class="view">
+                    <h1>Settings</h1>
+                    <p>The administrative area for application management.</p>
+                </section>
+                
+                <!-- Sub-View: Data Import -->
+                <section id="data-import" class="view">
+                    <h1>Settings: Data Import</h1>
+                    <p>A secure and simple interface for authorized administrators to upload the two core data source files.</p>
+                    
+                    <div class="upload-section">
+                        <h2>Upload CoE Member Data</h2>
+                        <p>Upload the Excel file containing information for all CoE members. The file must contain the required columns (LDAP, Oracle ID, etc.).</p>
+                        <a href="#">Download Template</a>
+                        <div class="upload-area">Drag and drop file here or <button>Choose File</button></div>
+                        <button style="margin-top: 10px;">[Process Member File]</button>
+                    </div>
+
+                    <div class="upload-section">
+                        <h2>Upload Monthly Utilization Data</h2>
+                        <p>Upload the Excel file containing monthly billable hours and utilization for all employees.</p>
+                        <a href="#">Download Template</a>
+                        <div class="upload-area">Drag and drop file here or <button>Choose File</button></div>
+                        <button style="margin-top: 10px;">[Process Utilization File]</button>
+                    </div>
+                    <div id="feedback-message" style="margin-top: 20px; padding: 10px;">
+                        <!-- Feedback messages will appear here -->
+                    </div>
+                </section>
+
+                <!-- Sub-View: Key Member Management -->
+                <section id="key-members" class="view">
+                    <h1>Settings: Key Member Management</h1>
+                    <p>An interface to designate individuals as "Key Members."</p>
+                    <!-- Management UI would go here -->
+                </section>
+
+                <!-- Sub-View: Notification Preferences -->
+                <section id="notifications" class="view">
+                    <h1>Settings: Notification Preferences</h1>
+                    <p>Controls for the automated timesheet reminder emails (TBD).</p>
+                    <!-- Preference controls would go here -->
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+<script>
+    // Basic JavaScript for single-page navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        const links = document.querySelectorAll('.nav-link');
+        const views = document.querySelectorAll('.view');
+
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href').substring(1);
+
+                // Update active link
+                links.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update active view
+                views.forEach(view => {
+                    if (view.id === targetId) {
+                        view.classList.add('active');
+                    } else {
+                        view.classList.remove('active');
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
