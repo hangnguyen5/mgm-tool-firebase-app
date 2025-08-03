@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoE Management Platform</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="js/utils/viewLoader.js"></script>
+    <script src="js/components/navigation.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Persistent Left-Hand Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">CoE Management</div>
+            <nav>
+                <ul>
+                    <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="#resource-planner" class="nav-link">Resource Planner</a></li>
+                    <li><a href="#member-directory" class="nav-link">Member Directory</a></li>
+                    <li><a href="#projects" class="nav-link">Projects</a></li>
+                    <li class="submenu">
+                        <a href="#settings" class="nav-link">Settings (Admin only)</a>
+                        <ul>
+                            <li><a href="#settings-data-import" class="nav-link">Data Import</a></li>
+                            <li><a href="#settings-key-members" class="nav-link">Key Members</a></li>
+                            <li><a href="#settings-notifications" class="nav-link">Notifications</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="main-container">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="user-menu">
+                    <div class="notifications">[Notifications Icon]</div>
+                    <div class="user-name">[User Name v]</div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div id="view-container">
+                    <!-- Views will be loaded here -->
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="ai-chat-icon">
+        <!-- AI Assistant Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white">
+            <path d="M0 0h24v24H0z" fill="none"/>
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10c5.52 0 10-4.48 10-10S17.51 2 11.99 2zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-4.5l2.75 1.1V8.4l-2.75 1.1zM16.5 9.5l-2.75-1.1v8.2l2.75-1.1z"/>
+        </svg>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // No inline navigation logic here. All view loading is handled by navigation.js and viewLoader.js.
+    </script>
+</body>
+</html>

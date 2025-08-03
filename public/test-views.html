@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<div id="test-results" style="font-family: sans-serif; padding: 20px;">
+    <h1>View Loading Test</h1>
+    <div id="output"></div>
+</div>
+<script>
+async function testViewAccess() {
+    const views = [
+        'dashboard',
+        'resource-planner',
+        'member-directory',
+        'projects',
+        'settings',
+        'settings/data-import',
+        'settings/key-members',
+        'settings/notifications'
+    ];
+    
+    const output = document.getElementById('output');
+    
+    for (const view of views) {
+        try {
+            const response = await fetch(`views/${view}/index.html`);
+            const status = response.ok ? '✅' : '❌';
+            const statusText = response.ok ? 'OK' : `Error: ${response.status}`;
+            output.innerHTML += `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd;">
+                    <strong>${status} ${view}</strong> - ${statusText}
+                </div>
+            `;
+        } catch (error) {
+            output.innerHTML += `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; color: red;">
+                    <strong>❌ ${view}</strong> - ${error.message}
+                </div>
+            `;
+        }
+    }
+}
+
+testViewAccess();
+</script>
