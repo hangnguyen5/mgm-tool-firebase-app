@@ -1,8 +1,1023 @@
-<section id="projects" class="views">
-    <h1>Projects</h1>
-    <button>+ Add New Project</button>
-    <div class="projects-list" style="margin-top: 20px;">
-        <div class="card"><strong>Project Alpha</strong><br>Details...</div>
-        <div class="card"><strong>Project Beta</strong><br>Details...</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects Management</title>
+    <style>
+        .views {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .primary-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .primary-button:hover {
+            background-color: #1976D2;
+        }
+        
+        .secondary-button {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        
+        .secondary-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .danger-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .danger-button:hover {
+            background-color: #d32f2f;
+        }
+        
+        .projects-grid {
+            margin-top: 20px;
+        }
+        
+        .projects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .projects-table th,
+        .projects-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .projects-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .projects-table td {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .projects-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .projects-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .project-name {
+            font-weight: 500;
+            color: #2196F3;
+        }
+        
+        .project-id-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .project-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 16px;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33,150,243,0.2);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f44336;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 1001;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .success-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 1001;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Loading spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .projects-table {
+                font-size: 12px;
+            }
+            
+            .projects-table th,
+            .projects-table td {
+                padding: 8px 12px;
+            }
+            
+            .project-actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .project-actions button {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section id="projects" class="views">
+        <div class="header-actions">
+            <h1>Projects Management</h1>
+            <div>
+                <button class="primary-button" onclick="window.openCreateModal()">
+                    + Add New Project
+                </button>
+            </div>
+        </div>
+        
+        <div id="projects-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading projects...
+            </div>
+        </div>
+    </section>
+
+    <!-- Create/Edit Project Modal -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Add New Project</h2>
+                <button class="modal-close" onclick="window.closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-id">Project ID *</label>
+                        <input type="number" id="project-id" name="project_id" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project-name">Project Name *</label>
+                        <input type="text" id="project-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pm-name">Project Manager Name *</label>
+                        <input type="text" id="pm-name" name="pm_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pm-email">Project Manager Email *</label>
+                        <input type="email" id="pm-email" name="pm_email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="start-date">Start Date *</label>
+                        <input type="date" id="start-date" name="project_start_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="roll-off-date">Roll-off Date</label>
+                        <input type="date" id="roll-off-date" name="roll_off_date">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-button" onclick="window.closeModal()">Cancel</button>
+                <button class="primary-button" onclick="window.saveProject()" id="save-button">
+                    Save Project
+                </button>
+            </div>
+        </div>
     </div>
-</section>
+
+    <script>
+        (function() {
+            
+            // Prevent redeclaration error
+            if (window.ProjectManager) {
+                delete window.ProjectManager;
+                delete window.projectManager;
+            }
+
+            // Project Manager Class
+            window.ProjectManager = class ProjectManager {
+                constructor() {
+                    
+                    this.projects = [];
+                    this.currentProject = null;
+                    this.isEditing = false;
+                    
+                    // Don't call init() in constructor to avoid timing issues
+                    // init() will be called manually after ensuring Firebase is ready
+                }
+
+                async init() {
+                    try {
+                        await this.waitForFirebase();
+                        await this.loadProjects();
+                    } catch (error) {
+                        this.showError(`Initialization failed: ${error.message}`);
+                        this.renderEmptyState('Failed to connect to database');
+                    }
+                }
+
+                // Get the correct database for projects
+                getProjectsDatabase() {
+                    const { getFirestore } = window.firestoreModule;
+                    
+                    // Explicitly use the named Firestore database for projects
+                    const projectsDb = getFirestore(window.firebaseApp, 'projects-data');
+                    
+                    return projectsDb;
+                }
+
+                // Wait for Firebase to be ready
+                async waitForFirebase(timeout = 15000) {
+                    return new Promise((resolve, reject) => {
+                        if (window.db && window.firestoreModule) {
+                            resolve(true);
+                            return;
+                        }
+
+                        let resolved = false;
+
+                        const checkFirebase = (event) => {
+                            if (resolved) return;
+                            
+                            if (window.db && window.firestoreModule) {
+                                resolved = true;
+                                resolve(true);
+                            } else if (event?.detail?.error) {
+                                resolved = true;
+                                reject(new Error(event.detail.error));
+                            }
+                        };
+
+                        window.addEventListener('firebaseReady', checkFirebase, { once: true });
+
+                        // Timeout fallback
+                        setTimeout(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                window.removeEventListener('firebaseReady', checkFirebase);
+                                reject(new Error('Firebase not ready after timeout'));
+                            }
+                        }, timeout);
+                    });
+                }
+
+                // Load projects from Firestore
+                async loadProjects() {
+                    if (!window.db || !window.firestoreModule) {
+                        throw new Error('Firebase not initialized');
+                    }
+
+                    try {
+                        const { collection, getDocs, query, orderBy, getFirestore } = window.firestoreModule;
+                        
+                        // Use helper function to get correct database
+                        const projectsDb = this.getProjectsDatabase();
+                        
+                        const projectsRef = collection(projectsDb, 'project_id');
+                        const projectsQuery = query(projectsRef, orderBy('project_id', 'desc'));
+                        
+                        const snapshot = await getDocs(projectsQuery);
+                        
+                        if (snapshot.empty) {
+                            this.projects = [];
+                            this.renderEmptyState('No projects found');
+                            return;
+                        }
+                        
+                        this.projects = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        
+                        this.renderProjects();
+                        
+                    } catch (error) {
+                        
+                        // Check if it's a permission error
+                        if (error.code === 'permission-denied') {
+                            this.showError('Permission denied. Please check database security rules.');
+                        } else if (error.code === 'not-found') {
+                            this.showError('Database or collection not found. Please check database configuration.');
+                        } else {
+                            this.showError(`Failed to load projects: ${error.message}`);
+                        }
+                        
+                        this.renderEmptyState('Error loading projects');
+                    }
+                }
+
+                // Render projects grid
+                renderProjects() {
+                    const container = document.getElementById('projects-container');
+                    
+                    if (this.projects.length === 0) {
+                        this.renderEmptyState('No projects found');
+                        return;
+                    }
+                    
+                    const projectsHTML = this.projects.map(project => `
+                        <tr>
+                            <td class="project-name">${project.name || 'Untitled Project'}</td>
+                            <td class="project-id-badge">ID: ${project.project_id}</td>
+                            <td>${project.pm_name || 'N/A'}</td>
+                            <td>${project.pm_email || 'N/A'}</td>
+                            <td>${this.formatDate(project.project_start_date)}</td>
+                            <td>${this.formatDate(project.roll_off_date)}</td>
+                            <td class="project-actions">
+                                <button class="secondary-button" onclick="window.editProject('${project.id}')">
+                                    Edit
+                                </button>
+                                <button class="danger-button" onclick="window.deleteProject('${project.id}')">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    
+                    container.innerHTML = `
+                        <table class="projects-table">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Project ID</th>
+                                    <th>Project Manager</th>
+                                    <th>Email</th>
+                                    <th>Start Date</th>
+                                    <th>Roll-off Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${projectsHTML}
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                // Render empty state
+                renderEmptyState(message = 'No projects found') {
+                    const container = document.getElementById('projects-container');
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📁</div>
+                            <h3>${message}</h3>
+                            <p>Create your first project to get started.</p>
+                            <button class="primary-button" onclick="window.openCreateModal()">
+                                + Add New Project
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // Format date for display
+                formatDate(dateString) {
+                    if (!dateString) return 'N/A';
+                    
+                    // Handle different date formats
+                    let date;
+                    if (dateString.includes('-')) {
+                        // Format: "8-Jun-25" or "2025-06-08"
+                        if (dateString.includes('Jun') || dateString.includes('Jan') || dateString.includes('Feb')) {
+                            // Parse "8-Jun-25" format
+                            const parts = dateString.split('-');
+                            const monthMap = {
+                                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                                'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                                'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                            };
+                            const day = parts[0].padStart(2, '0');
+                            const month = monthMap[parts[1]] || '01';
+                            const year = '20' + parts[2];
+                            date = new Date(`${year}-${month}-${day}`);
+                        } else {
+                            date = new Date(dateString);
+                        }
+                    } else {
+                        date = new Date(dateString);
+                    }
+                    
+                    if (isNaN(date.getTime())) return dateString;
+                    
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                }
+
+                // Open create modal
+                openCreateModal() {
+                    this.isEditing = false;
+                    this.currentProject = null;
+                    
+                    document.getElementById('modal-title').textContent = 'Add New Project';
+                    document.getElementById('save-button').textContent = 'Save Project';
+                    
+                    // Reset form
+                    document.getElementById('project-form').reset();
+                    document.getElementById('project-id').disabled = false;
+                    
+                    // Show modal
+                    document.getElementById('project-modal').style.display = 'block';
+                }
+
+                // Edit project
+                editProject(projectId) {
+                    const project = this.projects.find(p => p.id === projectId);
+                    if (!project) return;
+                    
+                    this.isEditing = true;
+                    this.currentProject = project;
+                    
+                    document.getElementById('modal-title').textContent = 'Edit Project';
+                    document.getElementById('save-button').textContent = 'Update Project';
+                    
+                    // Populate form
+                    document.getElementById('project-id').value = project.project_id || '';
+                    document.getElementById('project-name').value = project.name || '';
+                    document.getElementById('pm-name').value = project.pm_name || '';
+                    document.getElementById('pm-email').value = project.pm_email || '';
+                    
+                    // Convert dates to input format
+                    document.getElementById('start-date').value = this.convertToInputDate(project.project_start_date);
+                    document.getElementById('roll-off-date').value = this.convertToInputDate(project.roll_off_date);
+                    
+                    // Prevent changing primary key when editing
+                    document.getElementById('project-id').disabled = true;
+                    
+                    // Show modal
+                    document.getElementById('project-modal').style.display = 'block';
+                }
+
+                // Convert date to input format (YYYY-MM-DD)
+                convertToInputDate(dateString) {
+                    if (!dateString) return '';
+                    
+                    let date;
+                    if (dateString.includes('-') && (dateString.includes('Jun') || dateString.includes('Jan'))) {
+                        // Parse "8-Jun-25" format
+                        const parts = dateString.split('-');
+                        const monthMap = {
+                            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                        };
+                        const day = parts[0].padStart(2, '0');
+                        const month = monthMap[parts[1]] || '01';
+                        const year = '20' + parts[2];
+                        return `${year}-${month}-${day}`;
+                    } else {
+                        date = new Date(dateString);
+                        if (isNaN(date.getTime())) return '';
+                        return date.toISOString().split('T')[0];
+                    }
+                }
+
+                // Close modal
+                closeModal() {
+                    document.getElementById('project-modal').style.display = 'none';
+                    this.currentProject = null;
+                    this.isEditing = false;
+                    const projectIdInput = document.getElementById('project-id');
+                    if (projectIdInput) projectIdInput.disabled = false;
+                }
+
+                // Save project (create or update)
+                async saveProject() {
+                    const form = document.getElementById('project-form');
+                    const formData = new FormData(form);
+                    
+                    // Validate required fields
+                    if (!formData.get('project_id') || !formData.get('name') || 
+                        !formData.get('pm_name') || !formData.get('pm_email') || 
+                        !formData.get('project_start_date')) {
+                        this.showError('Please fill in all required fields');
+                        return;
+                    }
+                    
+                    const projectData = {
+                        project_id: parseInt(formData.get('project_id')),
+                        name: formData.get('name'),
+                        pm_name: formData.get('pm_name'),
+                        pm_email: formData.get('pm_email'),
+                        project_start_date: this.convertFromInputDate(formData.get('project_start_date')),
+                        roll_off_date: formData.get('roll_off_date') ? 
+                                      this.convertFromInputDate(formData.get('roll_off_date')) : null
+                    };
+                    
+                    try {
+                        const saveButton = document.getElementById('save-button');
+                        saveButton.disabled = true;
+                        saveButton.innerHTML = '<span class="spinner"></span>Saving...';
+                        
+                        if (this.isEditing) {
+                            await this.updateProject(this.currentProject.id, projectData);
+                            this.showSuccess('Project updated successfully');
+                        } else {
+                            await this.createProject(projectData);
+                            this.showSuccess('Project created successfully');
+                        }
+                        
+                        this.closeModal();
+                        await this.loadProjects();
+                        
+                    } catch (error) {
+                        this.showError(`Failed to save project: ${error.message}`);
+                    } finally {
+                        const saveButton = document.getElementById('save-button');
+                        saveButton.disabled = false;
+                        saveButton.textContent = this.isEditing ? 'Update Project' : 'Save Project';
+                    }
+                }
+
+                // Convert from input date format to Firestore format
+                convertFromInputDate(dateString) {
+                    if (!dateString) return null;
+                    
+                    const date = new Date(dateString);
+                    const day = date.getDate();
+                    const month = date.toLocaleDateString('en-US', { month: 'short' });
+                    const year = date.getFullYear().toString().slice(-2);
+                    
+                    return `${day}-${month}-${year}`;
+                }
+
+                // Create new project
+                async createProject(projectData) {
+                    const { collection, setDoc, doc, getFirestore } = window.firestoreModule;
+                    
+                    // Use same database logic as loadProjects
+                    const projectsDb = this.getProjectsDatabase(); // or getFirestore(window.firebaseApp) for default
+                    const projectsRef = collection(projectsDb, 'project_id');
+                    
+                    const targetId = String(projectData.project_id);
+                    const targetDocRef = doc(projectsDb, 'project_id', targetId);
+                    await setDoc(targetDocRef, projectData, { merge: true });
+                }
+
+                // Update existing project
+                async updateProject(projectId, projectData) {
+                    const { doc, updateDoc, getFirestore } = window.firestoreModule;
+                    
+                    // Use same database logic as loadProjects
+                    const projectsDb = this.getProjectsDatabase(); // or getFirestore(window.firebaseApp) for default
+                    const projectRef = doc(projectsDb, 'project_id', String(projectId));
+                    
+                    await updateDoc(projectRef, projectData);
+                }
+
+                // Delete project
+                async deleteProject(projectId) {
+                    const project = this.projects.find(p => p.id === projectId);
+                    if (!project) return;
+                    
+                    if (!confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone.`)) {
+                        return;
+                    }
+                    
+                    try {
+                        const { doc, deleteDoc, getFirestore } = window.firestoreModule;
+                        
+                        // Use same database logic as loadProjects
+                        const projectsDb = this.getProjectsDatabase(); // or getFirestore(window.firebaseApp) for default
+                        const projectRef = doc(projectsDb, 'project_id', String(projectId));
+                        
+                        await deleteDoc(projectRef);
+                        
+                        this.showSuccess('Project deleted successfully');
+                        await this.loadProjects();
+                        
+                    } catch (error) {
+                        this.showError(`Failed to delete project: ${error.message}`);
+                    }
+                }
+
+                // Show error notification
+                showError(message) {
+                    this.showNotification(message, 'error');
+                }
+
+                // Show success notification
+                showSuccess(message) {
+                    this.showNotification(message, 'success');
+                }
+
+                // Show notification
+                showNotification(message, type = 'error') {
+                    const notification = document.createElement('div');
+                    notification.className = `${type}-notification`;
+                    notification.innerHTML = `
+                        ${message}
+                        <button onclick="this.parentElement.remove()" 
+                                style="
+                                    background: none;
+                                    border: none;
+                                    color: white;
+                                    margin-left: 10px;
+                                    cursor: pointer;
+                                    font-size: 16px;
+                                ">×</button>
+                    `;
+                    
+                    document.body.appendChild(notification);
+
+                    // Auto remove after 5 seconds
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 5000);
+                }
+            }
+
+            // Global wrapper functions to avoid reference errors
+            window.openCreateModal = function() {
+                if (window.projectManager) {
+                    window.projectManager.openCreateModal();
+                } else {
+                    // Try to initialize immediately
+                    if (window.ProjectManager && !window.projectManager && window.db && window.firestoreModule) {
+                        try {
+                            window.projectManager = new window.ProjectManager();
+                            window.projectManager.init(); // Call init() manually
+                            // Wait a moment for initialization to complete
+                            setTimeout(() => {
+                                if (window.projectManager) {
+                                    window.projectManager.openCreateModal();
+                                }
+                            }, 200);
+                        } catch (error) {
+                            alert('Unable to initialize project manager. Please refresh the page.');
+                        }
+                    } else {
+                        alert('Firebase is not ready yet. Please wait a moment and try again.');
+                    }
+                }
+            };
+
+            window.editProject = function(projectId) {
+                if (window.projectManager) {
+                    window.projectManager.editProject(projectId);
+                } else {
+                    // Try to initialize immediately
+                    if (window.ProjectManager && !window.projectManager && window.db && window.firestoreModule) {
+                        try {
+                            window.projectManager = new window.ProjectManager();
+                            window.projectManager.init(); // Call init() manually
+                            setTimeout(() => {
+                                if (window.projectManager) {
+                                    window.projectManager.editProject(projectId);
+                                }
+                            }, 200);
+                        } catch (error) {
+                            alert('Unable to initialize project manager. Please refresh the page.');
+                        }
+                    } else {
+                        alert('Firebase is not ready yet. Please wait a moment and try again.');
+                    }
+                }
+            };
+
+            window.deleteProject = function(projectId) {
+                if (window.projectManager) {
+                    window.projectManager.deleteProject(projectId);
+                } else {
+                    // Try to initialize immediately
+                    if (window.ProjectManager && !window.projectManager && window.db && window.firestoreModule) {
+                        try {
+                            window.projectManager = new window.ProjectManager();
+                            window.projectManager.init(); // Call init() manually
+                            setTimeout(() => {
+                                if (window.projectManager) {
+                                    window.projectManager.deleteProject(projectId);
+                                }
+                            }, 200);
+                        } catch (error) {
+                            alert('Unable to initialize project manager. Please refresh the page.');
+                        }
+                    } else {
+                        alert('Firebase is not ready yet. Please wait a moment and try again.');
+                    }
+                }
+            };
+
+            window.closeModal = function() {
+                if (window.projectManager) {
+                    window.projectManager.closeModal();
+                } else {
+                    // Try to close modal directly as fallback
+                    const modal = document.getElementById('project-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+            };
+
+            window.saveProject = function() {
+                if (window.projectManager) {
+                    window.projectManager.saveProject();
+                } else {
+                    alert('Firebase is not ready yet. Please wait a moment and try again.');
+                }
+            };
+
+            // Try to initialize immediately when script loads
+            
+            // Function to check and initialize
+            const tryInitialize = () => {
+                if (window.db && window.firestoreModule && window.firebaseApp && !window.projectManager) {
+                    try {
+                        window.projectManager = new window.ProjectManager();
+                        window.projectManager.init(); // Remove await here
+                        return true;
+                    } catch (error) {
+                        return false;
+                    }
+                }
+                return false;
+            };
+
+            // Try immediate initialization if Firebase is ready
+            if (!tryInitialize()) {
+                // If Firebase not ready, try every 200ms for up to 10 seconds
+                let retryCount = 0;
+                const maxRetries = 50; // 10 seconds
+                
+                const retryInit = () => {
+                    retryCount++;
+                    
+                    if (tryInitialize()) {
+                        return; // Stop retrying
+                    }
+                    
+                    if (retryCount < maxRetries) {
+                        setTimeout(retryInit, 200);
+                    } else {
+                        // Show error in UI
+                        const container = document.getElementById('projects-container');
+                        if (container) {
+                            container.innerHTML = `
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">⚠️</div>
+                                    <h3>Firebase Connection Error</h3>
+                                    <p>Unable to connect to the database. Please refresh the page.</p>
+                                    <button class="primary-button" onclick="location.reload()">
+                                        🔄 Refresh Page
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                };
+                
+                setTimeout(retryInit, 200);
+            }
+
+            // Listen for Firebase ready event
+            window.addEventListener('firebaseReady', (event) => {
+                
+                if (!window.projectManager && window.ProjectManager) {
+                    try {
+                        window.projectManager = new window.ProjectManager();
+                        window.projectManager.init(); // Call init() manually
+                    } catch (error) {
+                    }
+                }
+            });
+
+            // Manual test function for debugging (disabled)
+            window.testProjects = function() {};
+
+            // Initialize when DOM loaded
+            document.addEventListener('DOMContentLoaded', () => {
+                
+                if (window.projectManager) {
+                    return; // Already initialized
+                }
+                
+                // Wait a bit for Firebase to be ready
+                setTimeout(() => {
+                    
+                    try {
+                        window.projectManager = new window.ProjectManager();
+                        window.projectManager.init(); // Call init() manually
+                    } catch (error) {
+                    }
+                }, 500);
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('project-modal');
+                if (event.target === modal) {
+                    window.closeModal();
+                }
+            });
+        })(); // Close IIFE
+        
+        // Fallback: Ensure functions are available immediately
+        if (!window.openCreateModal) {
+            window.openCreateModal = function() {
+                alert('Project manager is still loading. Please wait a moment and try again.');
+            };
+            window.editProject = function() { alert('Project manager is still loading. Please wait a moment and try again.'); };
+            window.deleteProject = function() { alert('Project manager is still loading. Please wait a moment and try again.'); };
+            window.closeModal = function() { 
+                const modal = document.getElementById('project-modal');
+                if (modal) modal.style.display = 'none';
+            };
+            window.saveProject = function() { alert('Project manager is still loading. Please wait a moment and try again.'); };
+        }
+    </script>
+</body>
+</html>

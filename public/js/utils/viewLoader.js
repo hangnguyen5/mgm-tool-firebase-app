@@ -127,13 +127,31 @@ const viewLoader = {
             const scripts = viewContainer.getElementsByTagName('script');
             
             Array.from(scripts).forEach((script, index) => {
-                const newScript = document.createElement('script');
-                Array.from(script.attributes).forEach(attr => {
-                    newScript.setAttribute(attr.name, attr.value);
-                });
-                newScript.textContent = script.textContent;
-                
-                script.parentNode.replaceChild(newScript, script);
+                try {
+                    const newScript = document.createElement('script');
+                    Array.from(script.attributes).forEach(attr => {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    
+                    // Handle script content carefully to avoid await issues
+                    const scriptContent = script.textContent;
+                    if (scriptContent) {
+                        newScript.textContent = scriptContent;
+                    }
+                    
+                    script.parentNode.replaceChild(newScript, script);
+                } catch (error) {
+                    console.error(`Error replacing script ${index}:`, error);
+                    // Try alternative approach
+                    try {
+                        script.remove();
+                        const newScript = document.createElement('script');
+                        newScript.textContent = script.textContent;
+                        viewContainer.appendChild(newScript);
+                    } catch (fallbackError) {
+                        console.error(`Fallback script replacement failed:`, fallbackError);
+                    }
+                }
             });
             
             console.log(`Successfully loaded view: ${viewId}`);
