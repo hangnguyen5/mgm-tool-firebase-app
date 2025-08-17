@@ -1,107 +1,771 @@
-<section id="member-directory" class="views">
-    <h1>Member Directory</h1>
-    <div class="filter-bar">
-        <select name="business-unit">
-            <option>All Business Units</option>
-            <option>IoT</option>
-            <option>C&D</option>
-            <option>Others</option>
-        </select>
-        <select name="role">
-            <option>All Roles</option>
-            <option>Developer</option>
-            <option>Manager</option>
-            <option>Designer</option>
-        </select>
-        <button class="primary-button">Add Member</button>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Business Unit</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><a href="#member-profile">John Doe</a></td>
-                <td>john.doe@example.com</td>
-                <td>Developer</td>
-                <td>IoT</td>
-            </tr>
-            <tr>
-                <td><a href="#member-profile">Jane Smith</a></td>
-                <td>jane.smith@example.com</td>
-                <td>Manager</td>
-                <td>C&D</td>
-            </tr>
-        </tbody>
-    </table>
-
-<style>
-    .filter-bar {
-        display: flex;
-        gap: 20px;
-        align-items: center;
-        margin: 20px 0;
-        padding: 15px;
-        background: white;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    .filter-bar select {
-        padding: 6px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background: white;
-    }
-    .primary-button {
-        background-color: #2196F3;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-left: auto;
-    }
-    .primary-button:hover {
-        background-color: #1976D2;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background: white;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-    th, td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-    }
-    th {
-        background-color: #f8f9fa;
-        font-weight: 500;
-        color: #666;
-    }
-    td a {
-        color: #2196F3;
-        text-decoration: none;
-    }
-    td a:hover {
-        text-decoration: underline;
-    }
-    @media (max-width: 768px) {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Directory</title>
+    <style>
+        .views {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
         .filter-bar {
-            flex-direction: column;
-            align-items: stretch;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .filter-bar select {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+        .primary-button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        .primary-button:hover {
+            background-color: #1976D2;
         }
         table {
-            display: block;
-            overflow-x: auto;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-    }
-</style>
-</section>
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+            color: #666;
+        }
+        td a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        td a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f44336;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 1000;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        
+        /* Loading spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Connection status indicator */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+        
+        .connection-status.connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .connection-status.disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status Indicator -->
+    <div id="connection-status" class="connection-status disconnected" style="display: none;">
+        Connecting to database...
+    </div>
+    
+    <section id="member-directory" class="views">
+        <h1>Member Directory</h1>
+        <div class="filter-bar">
+            <select name="business-unit">
+                <option>All Business Units</option>
+                <option>Cloud & DevOps</option>
+                <option>C&D</option>
+                <option>Lumada</option>
+                <option>Power Platform</option>
+                <option>Others</option>
+            </select>
+            <select name="role">
+                <option>All Roles</option>
+                <option>P1</option>
+                <option>P2</option>
+                <option>P3</option>
+                <option>P4</option>
+                <option>P5</option>
+                <option>Manager</option>
+                <option>Lead</option>
+                <option>Developer</option>
+                <option>Others</option>
+            </select>
+            <button class="primary-button">Add Member</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Business Unit</th>
+                </tr>
+            </thead>
+            <tbody id="member-table-body">
+                <tr>
+                    <td colspan="4" class="loading">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <div style="
+                                width: 20px; 
+                                height: 20px; 
+                                border: 2px solid #f3f3f3; 
+                                border-top: 2px solid #2196F3; 
+                                border-radius: 50%; 
+                                animation: spin 1s linear infinite;
+                            "></div>
+                            Loading members from database...
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Firebase sẽ được load từ main app, không cần load lại -->
+    <!-- Scripts sẽ sử dụng Firebase instance từ window.db -->
+
+    <script>
+        // Prevent redeclaration error - cleanup if already exists
+        if (window.MemberDirectory) {
+            if (window.memberDirectory && window.memberDirectory.unsubscribeListener) {
+                window.memberDirectory.unsubscribeListener();
+            }
+            delete window.MemberDirectory;
+            delete window.memberDirectory;
+        }
+
+        // Firebase v10 modular SDK - use global instances
+        window.MemberDirectory = class MemberDirectory {
+            constructor() {
+                this.members = [];
+                this.filteredMembers = [];
+                this.connectionStatus = document.getElementById('connection-status');
+                this.init();
+            }
+
+            async init() {
+                this.showConnectionStatus('Connecting to database...', 'disconnected');
+                
+                // Wait for Firebase to be ready
+                try {
+                    await this.waitForFirebase();
+                    
+                    // Debug Firebase connection
+                    this.debugFirebaseConnection();
+                    
+                    // Load members using Firebase SDK
+                    await this.loadMembers();
+                    this.setupEventListeners();
+                    
+                    // Disable real-time listener temporarily due to 400 error
+                    // this.setupRealtimeListener();
+                } catch (error) {
+                    console.error('Failed to initialize Member Directory:', error);
+                    
+                    // Try to refresh Firebase connection
+                    if (error.message.includes('Firebase modules not available')) {
+                        await this.refreshFirebaseConnection();
+                    } else {
+                        this.showError(`Initialization failed: ${error.message}`);
+                        this.renderEmptyState(`Initialization error: ${error.message}`);
+                    }
+                }
+            }
+
+            // Method to refresh Firebase connection
+            async refreshFirebaseConnection() {
+                try {
+                    this.showConnectionStatus('Refreshing connection...', 'disconnected');
+                    
+                    // Wait a bit for Firebase modules to load
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // Check if Firebase is now available
+                    if (window.db && window.firestoreModule) {
+                        this.debugFirebaseConnection();
+                        await this.loadMembers();
+                        this.setupEventListeners();
+                        
+                        // Disable real-time listener temporarily due to 400 error
+                        // this.setupRealtimeListener();
+                    } else {
+                        throw new Error('Firebase still not available after refresh');
+                    }
+                } catch (refreshError) {
+                    console.error('Failed to refresh Firebase connection:', refreshError);
+                    this.showError(`Connection refresh failed: ${refreshError.message}`);
+                    this.renderEmptyState(`Please refresh the page to try again`);
+                }
+            }
+
+            // Debug Firebase connection details
+            debugFirebaseConnection() {
+                if (window.db) {
+                    // Try to extract database ID for verification
+                    try {
+                        let dbId = 'unknown';
+                        
+                        if (window.db._delegate && window.db._delegate._databaseId) {
+                            dbId = window.db._delegate._databaseId.database || window.db._delegate._databaseId;
+                        } else if (window.db._databaseId) {
+                            dbId = window.db._databaseId.database || window.db._databaseId;
+                        } else if (window.db.settings && window.db.settings.databaseId) {
+                            dbId = window.db.settings.databaseId;
+                        }
+                        
+                        if (dbId === 'historical-employee-data') {
+                            console.log('✅ Connected to correct database: historical-employee-data');
+                        } else if (dbId !== 'unknown') {
+                            console.warn('⚠️ Connected to database:', dbId, '(expected: historical-employee-data)');
+                        }
+                    } catch (debugError) {
+                        // Silent fail for debug
+                    }
+                }
+            }
+
+            // Wait for Firebase to be ready
+            async waitForFirebase(timeout = 15000) {
+                return new Promise((resolve, reject) => {
+                    if (window.db && window.firestoreModule) {
+                        resolve(true);
+                        return;
+                    }
+
+                    let resolved = false;
+                    let retryCount = 0;
+                    const maxRetries = 3;
+
+                    const checkFirebase = (event) => {
+                        if (resolved) return;
+                        
+                        if (window.db && window.firestoreModule) {
+                            resolved = true;
+                            resolve(true);
+                        } else if (event?.detail?.error) {
+                            resolved = true;
+                            reject(new Error(event.detail.error));
+                        }
+                    };
+
+                    const retryCheck = () => {
+                        if (resolved) return;
+                        retryCount++;
+                        
+                        if (window.db && window.firestoreModule) {
+                            resolved = true;
+                            resolve(true);
+                        } else if (retryCount < maxRetries) {
+                            // Wait longer between retries
+                            setTimeout(retryCheck, 2000);
+                        } else {
+                            resolved = true;
+                            reject(new Error('Firebase modules not available after retries'));
+                        }
+                    };
+
+                    window.addEventListener('firebaseReady', checkFirebase, { once: true });
+
+                    // Start retry check
+                    setTimeout(retryCheck, 1000);
+
+                    // Final timeout fallback
+                    setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            window.removeEventListener('firebaseReady', checkFirebase);
+                            reject(new Error('Firebase not ready after timeout'));
+                        }
+                    }, timeout);
+                });
+            }
+
+            // Load data from Firestore using Firebase v10 modular SDK
+            async loadMembers() {
+                if (!window.db || !window.firestoreModule) {
+                    throw new Error('Firebase not initialized');
+                }
+
+                try {
+                    this.showConnectionStatus('Loading members...', 'disconnected');
+                    
+                    const { collection, getDocs, query, limit } = window.firestoreModule;
+                    
+                    // Create reference to employees collection
+                    const employeesRef = collection(window.db, 'employees');
+                    const employeesQuery = query(employeesRef, limit(1000));
+                    
+                    const snapshot = await getDocs(employeesQuery);
+                    
+                    // Check if we have documents
+                    if (snapshot.docs.length === 0 || snapshot.empty) {
+                        console.warn('No documents found in employees collection');
+                        
+                        // Try different collection names to debug
+                        const testCollections = ['employees', 'users', 'members', 'employee', 'staff', 'people'];
+                        
+                        for (const collectionName of testCollections) {
+                            try {
+                                const testRef = collection(window.db, collectionName);
+                                const testQuery = query(testRef, limit(1));
+                                const testSnap = await getDocs(testQuery);
+                                
+                                if (!testSnap.empty) {
+                                    console.log(`Found data in ${collectionName} collection`);
+                                    break;
+                                }
+                            } catch (testError) {
+                                // Silent fail
+                            }
+                        }
+                        
+                        this.members = [];
+                        this.filteredMembers = [];
+                        this.renderEmptyState('No employees found in historical-employee-data database');
+                        this.showConnectionStatus('✅ Connected - No employees found', 'connected');
+                        return;
+                    }
+                    
+                    // We have data! Process it
+                    this.processFirestoreSnapshot(snapshot);
+                    
+                } catch (error) {
+                    console.error('Error loading members from Firestore:', error);
+                    
+                    // Handle different types of errors
+                    if (error.code === 'permission-denied') {
+                        this.showConnectionStatus('❌ Permission denied', 'disconnected');
+                        this.showError('Permission denied. Please check Firestore security rules.');
+                    } else if (error.code === 'unavailable') {
+                        this.showConnectionStatus('❌ Service unavailable', 'disconnected');
+                        this.showError('Firestore service is currently unavailable. Please try again later.');
+                    } else if (error.code === 'not-found') {
+                        this.showConnectionStatus('❌ Database not found', 'disconnected');
+                        this.showError('historical-employee-data database or employees collection not found.');
+                    } else {
+                        this.showConnectionStatus('❌ Failed to load data', 'disconnected');
+                        this.showError(`Failed to load members: ${error.message}`);
+                    }
+                    
+                    // Show empty state with error
+                    this.renderEmptyState(`Error loading data: ${error.message}`);
+                }
+            }
+
+            // Set up real-time listener using Firebase v10 modular SDK
+            setupRealtimeListener() {
+                if (!window.db || !window.firestoreModule) {
+                    console.warn('⚠️ Firebase not available for real-time listener');
+                    return;
+                }
+
+                try {
+                    console.log('Setting up real-time Firestore listener...');
+                    
+                    const { collection, onSnapshot } = window.firestoreModule;
+                    const employeesRef = collection(window.db, 'employees');
+                    
+                    // Set up real-time listener
+                    const unsubscribe = onSnapshot(employeesRef, (snapshot) => {
+                        console.log('📊 Real-time update received');
+                        console.log('- Size:', snapshot.size);
+                        console.log('- Empty:', snapshot.empty);
+                        console.log('- Metadata:', snapshot.metadata);
+                        
+                        if (!snapshot.empty) {
+                            this.processFirestoreSnapshot(snapshot);
+                        }
+                    }, (error) => {
+                        console.error('❌ Real-time listener error:', error);
+                        console.error('❌ Error code:', error.code);
+                        console.error('❌ Error message:', error.message);
+                        this.showError(`Real-time listener error: ${error.message}`);
+                    });
+                    
+                    console.log('✅ Real-time listener setup completed');
+                    
+                    // Store unsubscribe function
+                    this.unsubscribeListener = unsubscribe;
+                    
+                } catch (error) {
+                    console.error('❌ Failed to setup real-time listener:', error);
+                }
+            }
+
+            // Process Firestore snapshot data
+            processFirestoreSnapshot(snapshot) {
+                // Debug: Log first few documents to understand structure
+                const docs = snapshot.docs;
+                
+                // Convert Firestore documents to our format
+                this.members = docs.map((doc, index) => {
+                    const data = doc.data();
+                    data._id = doc.id; // Add document ID
+                    return this.mapEmployeeData(data);
+                });
+
+                this.filteredMembers = [...this.members];
+                this.renderMembers();
+                
+                this.showConnectionStatus(`✅ Loaded ${this.members.length} members`, 'connected');
+            }
+
+            // Mapping dữ liệu từ structure Firestore sang format hiển thị
+            mapEmployeeData(employee) {
+                // Handle the actual data structure from Firestore
+                const id = employee.oracle_id || employee.ldap || employee._id || 'N/A';
+                
+                // Map from personal_information object
+                const name = employee.personal_information?.full_name || 
+                           employee.full_name || 
+                           'N/A';
+                
+                const email = employee.personal_information?.email || 
+                            employee.email || 
+                            'N/A';
+                
+                // Map from organizational_unit object
+                const role = employee.organizational_unit?.level || 
+                           employee.level || 
+                           employee.role ||
+                           'N/A';
+                
+                const businessUnit = employee.organizational_unit?.CoE || 
+                                   employee.organizational_unit?.bu ||
+                                   employee.CoE ||
+                                   employee.bu ||
+                                   employee.group ||
+                                   'N/A';
+
+                return {
+                    id,
+                    name,
+                    email,
+                    role,
+                    businessUnit
+                };
+            }
+
+            // Filter members theo Business Unit và Role
+            filterMembers() {
+                const businessUnitFilter = document.querySelector('select[name="business-unit"]').value;
+                const roleFilter = document.querySelector('select[name="role"]').value;
+
+                this.filteredMembers = this.members.filter(member => {
+                    const matchBusinessUnit = businessUnitFilter === 'All Business Units' || 
+                                           member.businessUnit === businessUnitFilter;
+                    const matchRole = roleFilter === 'All Roles' || member.role === roleFilter;
+                    return matchBusinessUnit && matchRole;
+                });
+
+                this.renderMembers();
+            }
+
+            // Render danh sách members trong table
+            renderMembers() {
+                const tbody = document.querySelector('#member-table-body');
+                
+                if (!tbody) {
+                    console.error('Table tbody not found');
+                    return;
+                }
+
+                if (this.filteredMembers.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 20px; color: #666;">
+                                No members found
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const htmlRows = this.filteredMembers.map((member, index) => {
+                    return `
+                        <tr data-id="${member.id}">
+                            <td>
+                                <a href="#member-profile" data-member-id="${member.id}">
+                                    ${member.name}
+                                </a>
+                            </td>
+                            <td>${member.email}</td>
+                            <td>${member.role}</td>
+                            <td>${member.businessUnit}</td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = htmlRows.join('');
+            }
+
+            // Render empty state
+            renderEmptyState(message = 'No employees found') {
+                const tbody = document.querySelector('#member-table-body');
+                if (!tbody) {
+                    console.error('Table tbody not found');
+                    return;
+                }
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                                <div style="font-size: 48px; color: #ddd;">📋</div>
+                                <div style="font-size: 16px; font-weight: 500;">${message}</div>
+                                <div style="font-size: 14px; color: #999;">
+                                    ${message.includes('Error') ? 
+                                        'Please check the console for more details.' : 
+                                        'Add some employees to the Firestore database to get started.'}
+                                </div>
+                                <button onclick="window.memberDirectory?.refreshFirebaseConnection() || window.memberDirectory?.loadMembers()" 
+                                        style="
+                                            margin-top: 10px;
+                                            padding: 8px 16px;
+                                            background-color: #2196F3;
+                                            color: white;
+                                            border: none;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                        ">
+                                    Retry Connection
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // Thiết lập event listeners cho filter
+            setupEventListeners() {
+                // Business Unit filter
+                const businessUnitSelect = document.querySelector('select[name="business-unit"]');
+                if (businessUnitSelect) {
+                    businessUnitSelect.addEventListener('change', () => {
+                        this.filterMembers();
+                    });
+                }
+
+                // Role filter
+                const roleSelect = document.querySelector('select[name="role"]');
+                if (roleSelect) {
+                    roleSelect.addEventListener('change', () => {
+                        this.filterMembers();
+                    });
+                }
+
+                // Member profile links
+                document.addEventListener('click', (e) => {
+                    if (e.target.matches('a[data-member-id]')) {
+                        const memberId = e.target.dataset.memberId;
+                        const member = this.members.find(m => m.id === memberId);
+                        // Có thể thêm logic để hiển thị chi tiết member
+                    }
+                });
+            }
+
+            // Hiển thị thông báo lỗi
+            showError(message) {
+                console.error(message);
+                
+                // Tạo notification element
+                const notification = document.createElement('div');
+                notification.className = 'error-notification';
+                notification.innerHTML = `
+                    ${message}
+                    <button onclick="this.parentElement.remove()" 
+                            style="
+                                background: none;
+                                border: none;
+                                color: white;
+                                margin-left: 10px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            ">×</button>
+                `;
+                
+                document.body.appendChild(notification);
+
+                // Tự động ẩn sau 5 giây
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
+
+            // Hiển thị trạng thái kết nối
+            showConnectionStatus(message, status) {
+                if (this.connectionStatus) {
+                    this.connectionStatus.textContent = message;
+                    this.connectionStatus.className = `connection-status ${status}`;
+                    this.connectionStatus.style.display = 'block';
+                    
+                    // Tự động ẩn sau 3 giây nếu connected
+                    if (status === 'connected') {
+                        setTimeout(() => {
+                            this.connectionStatus.style.display = 'none';
+                        }, 3000);
+                    }
+                }
+            }
+
+            // Method để lấy thống kê
+            getStats() {
+                const stats = {
+                    total: this.members.length,
+                    byBusinessUnit: {},
+                    byRole: {}
+                };
+
+                this.members.forEach(member => {
+                    // Thống kê theo Business Unit
+                    if (stats.byBusinessUnit[member.businessUnit]) {
+                        stats.byBusinessUnit[member.businessUnit]++;
+                    } else {
+                        stats.byBusinessUnit[member.businessUnit] = 1;
+                    }
+
+                    // Thống kê theo Role
+                    if (stats.byRole[member.role]) {
+                        stats.byRole[member.role]++;
+                    } else {
+                        stats.byRole[member.role] = 1;
+                    }
+                });
+
+                return stats;
+            }
+        }
+
+        // Khởi tạo khi DOM loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if already initialized to prevent duplicate instances
+            if (window.memberDirectory) {
+                return;
+            }
+            
+            // Function to initialize when Firebase is ready
+            const initializeWhenReady = () => {
+                if (window.db && window.firestoreModule && window.firebaseApp) {
+                    try {
+                        const memberDirectory = new window.MemberDirectory();
+                        
+                        // Expose globally
+                        window.memberDirectory = memberDirectory;
+                        
+                    } catch (initError) {
+                        console.error('Failed to initialize Member Directory:', initError);
+                        // Show error in UI
+                        const tbody = document.querySelector('#member-table-body');
+                        if (tbody) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 20px; color: #f44336;">
+                                        Failed to initialize: ${initError.message}
+                                        <br><button onclick="location.reload()" style="margin-top: 10px; padding: 5px 10px;">Refresh Page</button>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    }
+                } else {
+                    // Show waiting message in UI
+                    const tbody = document.querySelector('#member-table-body');
+                    if (tbody) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="loading">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                        <div style="
+                                            width: 20px; 
+                                            height: 20px; 
+                                            border: 2px solid #f3f3f3; 
+                                            border-top: 2px solid #2196F3; 
+                                            border-radius: 50%; 
+                                            animation: spin 1s linear infinite;
+                                        "></div>
+                                        Waiting for Firebase to initialize...
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    // Try again in 500ms
+                    setTimeout(initializeWhenReady, 500);
+                }
+            };
+            
+            // Listen for Firebase ready event
+            window.addEventListener('firebaseReady', (event) => {
+                // Small delay to ensure all modules are fully loaded
+                setTimeout(initializeWhenReady, 100);
+            });
+            
+            // Start checking immediately
+            initializeWhenReady();
+        });
+    </script>
+</body>
+</html>
