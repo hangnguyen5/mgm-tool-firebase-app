@@ -312,6 +312,13 @@
         <div class="header-actions">
             <h1>Projects Management</h1>
             <div>
+                <label for="project-filter" style="margin-right:8px; font-weight:500; color:#333;">Filter:</label>
+                <select id="project-filter" onchange="window.projectManager && window.projectManager.setFilter(this.value)" style="margin-right:12px; padding:8px 10px; border-radius:4px; border:1px solid #ddd;">
+                    <option value="all">All Projects</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="ongoing">On Going</option>
+                    <option value="ended">Ended</option>
+                </select>
                 <button class="primary-button" onclick="window.openCreateModal()">
                     + Add New Project
                 </button>
@@ -364,6 +371,16 @@
                         <label for="roll-off-date">Roll-off Date</label>
                         <input type="date" id="roll-off-date" name="roll_off_date">
                     </div>
+
+                    <div class="form-group">
+                        <label for="degree-of-certainty">Degree of Certainty (%)</label>
+                        <input type="number" id="degree-of-certainty" name="degree_of_certainty" min="0" max="100" step="1" placeholder="e.g. 80">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="number-members">Number of Members</label>
+                        <input type="number" id="number-members" name="number_members" min="0" step="1" placeholder="e.g. 5">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -389,6 +406,8 @@
                 constructor() {
                     
                     this.projects = [];
+                    this.filter = 'all'; // possible: All, Upcoming, On Going, Ended
+                    this.filteredProjects = [];
                     this.currentProject = null;
                     this.isEditing = false;
                     
@@ -479,6 +498,8 @@
                             ...doc.data()
                         }));
                         
+                        // Apply filter and render
+                        this.applyFilter();
                         this.renderProjects();
                         
                     } catch (error) {
@@ -496,23 +517,27 @@
                     }
                 }
 
-                // Render projects grid
+                // Render projects grid (uses filteredProjects when available)
                 renderProjects() {
                     const container = document.getElementById('projects-container');
                     
-                    if (this.projects.length === 0) {
+                    const list = (this.filteredProjects && this.filteredProjects.length > 0) ? this.filteredProjects : this.projects;
+
+                    if (list.length === 0) {
                         this.renderEmptyState('No projects found');
                         return;
                     }
                     
-                    const projectsHTML = this.projects.map(project => `
+                    const projectsHTML = list.map(project => `
                         <tr>
                             <td class="project-name">${project.name || 'Untitled Project'}</td>
-                            <td class="project-id-badge">ID: ${project.project_id}</td>
+                            <td>${project.project_id}</td>
                             <td>${project.pm_name || 'N/A'}</td>
                             <td>${project.pm_email || 'N/A'}</td>
                             <td>${this.formatDate(project.project_start_date)}</td>
                             <td>${this.formatDate(project.roll_off_date)}</td>
+                            <td>${project.degree_of_certainty != null ? project.degree_of_certainty + '%' : 'N/A'}</td>
+                            <td>${project.number_members != null ? project.number_members : 'N/A'}</td>
                             <td class="project-actions">
                                 <button class="secondary-button" onclick="window.editProject('${project.id}')">
                                     Edit
@@ -534,6 +559,8 @@
                                     <th>Email</th>
                                     <th>Start Date</th>
                                     <th>Roll-off Date</th>
+                                    <th>Degree of Certainty</th>
+                                    <th>Number Members</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -542,6 +569,79 @@
                             </tbody>
                         </table>
                     `;
+                }
+
+                // Parse project date string like '8-Jun-25' or '2025-06-08' into Date or null
+                parseProjectDate(dateString) {
+                    if (!dateString) return null;
+                    try {
+                        if (dateString.includes('-')) {
+                            // '8-Jun-25' style
+                            const parts = dateString.split('-');
+                            if (parts[1] && isNaN(Number(parts[1]))) {
+                                const monthMap = {
+                                    'Jan': '01','Feb': '02','Mar': '03','Apr': '04',
+                                    'May': '05','Jun': '06','Jul': '07','Aug': '08',
+                                    'Sep': '09','Oct': '10','Nov': '11','Dec': '12'
+                                };
+                                const day = parts[0].padStart(2,'0');
+                                const month = monthMap[parts[1]] || '01';
+                                const year = '20' + parts[2];
+                                return new Date(`${year}-${month}-${day}`);
+                            }
+                        }
+                        const d = new Date(dateString);
+                        return isNaN(d.getTime()) ? null : d;
+                    } catch (e) {
+                        return null;
+                    }
+                }
+
+                // Set filter and re-render
+                setFilter(filterName) {
+                    this.filter = filterName || 'all';
+                    this.applyFilter();
+                    this.renderProjects();
+                }
+
+                // Apply the currently selected filter to this.projects into this.filteredProjects
+                applyFilter() {
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                    if (!this.projects || this.projects.length === 0) {
+                        this.filteredProjects = [];
+                        return;
+                    }
+
+                    if (this.filter === 'all') {
+                        this.filteredProjects = this.projects.slice();
+                        return;
+                    }
+
+                    this.filteredProjects = this.projects.filter(p => {
+                        const start = this.parseProjectDate(p.project_start_date);
+                        const roll = this.parseProjectDate(p.roll_off_date);
+
+                        if (this.filter === 'upcoming') {
+                            // start >= today
+                            return start && start >= today;
+                        }
+
+                        if (this.filter === 'ongoing') {
+                            // started (start <= today) and not rolled off (no roll date or roll >= today)
+                            const started = start && start <= today;
+                            const notRolled = !roll || roll >= today;
+                            return started && notRolled;
+                        }
+
+                        if (this.filter === 'ended') {
+                            // rolled off before today
+                            return roll && roll < today;
+                        }
+
+                        return true;
+                    });
                 }
 
                 // Render empty state
@@ -631,6 +731,11 @@
                     // Convert dates to input format
                     document.getElementById('start-date').value = this.convertToInputDate(project.project_start_date);
                     document.getElementById('roll-off-date').value = this.convertToInputDate(project.roll_off_date);
+                    // Populate new numerical fields
+                    const degreeField = document.getElementById('degree-of-certainty');
+                    const numberField = document.getElementById('number-members');
+                    if (degreeField) degreeField.value = project.degree_of_certainty != null ? project.degree_of_certainty : '';
+                    if (numberField) numberField.value = project.number_members != null ? project.number_members : '';
                     
                     // Prevent changing primary key when editing
                     document.getElementById('project-id').disabled = true;
@@ -676,23 +781,39 @@
                 async saveProject() {
                     const form = document.getElementById('project-form');
                     const formData = new FormData(form);
-                    
-                    // Validate required fields
-                    if (!formData.get('project_id') || !formData.get('name') || 
-                        !formData.get('pm_name') || !formData.get('pm_email') || 
-                        !formData.get('project_start_date')) {
+
+                    // FormData omits disabled inputs (like project-id when editing).
+                    // Fallback to reading values directly from DOM when missing.
+                    const dom = (id) => {
+                        const el = document.getElementById(id);
+                        return el ? el.value : null;
+                    };
+
+                    const projectIdRaw = formData.get('project_id') || dom('project-id');
+                    const nameRaw = formData.get('name') || dom('project-name');
+                    const pmNameRaw = formData.get('pm_name') || dom('pm-name');
+                    const pmEmailRaw = formData.get('pm_email') || dom('pm-email');
+                    const startDateRaw = formData.get('project_start_date') || dom('start-date');
+
+                    // Validate required fields using fallbacks
+                    if (!projectIdRaw || !nameRaw || !pmNameRaw || !pmEmailRaw || !startDateRaw) {
                         this.showError('Please fill in all required fields');
                         return;
                     }
-                    
+
+                    const degreeVal = formData.get('degree_of_certainty') || dom('degree-of-certainty');
+                    const membersVal = formData.get('number_members') || dom('number-members');
+
                     const projectData = {
-                        project_id: parseInt(formData.get('project_id')),
-                        name: formData.get('name'),
-                        pm_name: formData.get('pm_name'),
-                        pm_email: formData.get('pm_email'),
-                        project_start_date: this.convertFromInputDate(formData.get('project_start_date')),
-                        roll_off_date: formData.get('roll_off_date') ? 
-                                      this.convertFromInputDate(formData.get('roll_off_date')) : null
+                        project_id: parseInt(projectIdRaw),
+                        name: nameRaw,
+                        pm_name: pmNameRaw,
+                        pm_email: pmEmailRaw,
+                        project_start_date: this.convertFromInputDate(startDateRaw),
+                        roll_off_date: (formData.get('roll_off_date') || dom('roll-off-date')) ? 
+                                      this.convertFromInputDate(formData.get('roll_off_date') || dom('roll-off-date')) : null,
+                        degree_of_certainty: degreeVal ? parseInt(degreeVal) : null,
+                        number_members: membersVal ? parseInt(membersVal) : null
                     };
                     
                     try {
