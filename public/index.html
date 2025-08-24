@@ -26,16 +26,15 @@
         };
         
         try {
-            console.log('🔥 Starting Firebase initialization...');
-            // console.log('Config:', config);
+            console.log('Starting Firebase initialization...');
             
             // Initialize Firebase
             const app = initializeApp(config);
-            console.log('✅ Firebase app initialized');
+            console.log('Firebase app initialized');
             
             // Initialize Firestore with specific database ID
             const db = getFirestore(app, 'historical-employee-data');
-            console.log('✅ Firestore initialized with historical-employee-data');
+            console.log('Firestore initialized with historical-employee-data');
             
             // Initialize Firebase Auth
             const auth = getAuth(app);
@@ -48,7 +47,7 @@
             window.firebaseConfig = config; // Use the config object
             
             // Import Firestore functions and make them global for views
-            console.log('🔄 Loading Firestore module...');
+            console.log('Loading Firestore module...');
             const firestoreModule = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
             window.firestoreModule = firestoreModule;
             console.log('✅ Firestore module loaded');
@@ -82,7 +81,7 @@
                         }
                     }, 2000);
                 } else {
-                    console.error('❌ Firebase components not all ready:', {
+                    console.error('Firebase components not all ready:', {
                         db: !!window.db,
                         firestoreModule: !!window.firestoreModule,
                         firebaseApp: !!window.firebaseApp,
