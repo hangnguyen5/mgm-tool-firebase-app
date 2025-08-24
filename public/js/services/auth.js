@@ -76,8 +76,6 @@ function initializeAuth() {
                 <h2>Welcome to Management Platform</h2>
                 <p>Please sign in to access the application.</p>
                 <button id="show-login-btn" class="auth-button">Sign In</button>
-                <br><br>
-                <button id="debug-modal-btn" class="auth-button" style="background-color: #dc3545;">Debug Modal</button>
             </div>
         `;
         document.body.appendChild(overlay);
@@ -116,22 +114,6 @@ function initializeAuth() {
                 if (!currentUser) {
                     console.error('❌ Sign In button not found in overlay');
                 }
-            }
-            
-            // Add debug button handler
-            const debugBtn = document.getElementById('debug-modal-btn');
-            if (debugBtn) {
-                debugBtn.addEventListener('click', () => {
-                    console.log('🐛 Debug button clicked');
-                    debugModalVisibility();
-                    
-                    // Force show modal with inline styles
-                    const modal = document.getElementById('login-modal');
-                    if (modal) {
-                        modal.style.cssText = 'display: flex !important; position: fixed !important; z-index: 99999 !important; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;';
-                        console.log('🐛 Modal forced visible with inline styles');
-                    }
-                });
             }
         }, 100);
         
