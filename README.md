@@ -24,7 +24,7 @@
 
 5. **Deploy to Firebase Hosting**  
     ```bash
-    firebase deploy --only hosting:hdsvn-coe-management-platform
+    firebase deploy --only hosting
     ```
 
 6. **Access your site**  
