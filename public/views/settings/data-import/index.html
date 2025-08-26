@@ -1,23 +1,1187 @@
-<section id="data-import" class="views">
-    <h1>Settings: Data Import</h1>
-    <p>A secure and simple interface for authorized administrators to upload the two core data source files.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Import Interface</title>
     
-    <div class="upload-section">
-        <h2>Upload CoE Member Data</h2>
-        <p>Upload the Excel file containing information for all CoE members. The file must contain the required columns (LDAP, Oracle ID, etc.).</p>
-        <a href="#">Download Template</a>
-        <div class="upload-area">Drag and drop file here or <button>Choose File</button></div>
-        <button style="margin-top: 10px;">Process Member File</button>
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+        // Firebase configuration - REPLACE WITH YOUR CONFIG
+        const config = firebaseConfig || {
+            apiKey: window.ENV?.FIREBASE_API_KEY || 'N/A',
+            authDomain: window.ENV?.FIREBASE_AUTH_DOMAIN || 'N/A',
+            projectId: window.ENV?.FIREBASE_PROJECT_ID || 'N/A',
+            storageBucket: window.ENV?.FIREBASE_STORAGE_BUCKET || 'N/A',
+            messagingSenderId: window.ENV?.FIREBASE_MESSAGING_SENDER_ID || 'N/A',
+            appId: window.ENV?.FIREBASE_APP_ID || 'N/A'
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+
+        // Make Firebase available globally
+        window.firebaseStorage = storage;
+        window.firebaseAuth = auth;
+        window.firebaseUpload = { uploadBytesResumable, ref, getDownloadURL };
+        window.firebaseAuthMethods = { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut };
+        
+        console.log('Firebase initialized successfully');
+    </script>
+    
+    <style>
+        .views {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .upload-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 15px 0;
+            background-color: #fff;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #007cba;
+        }
+
+        .upload-area.dragover {
+            border-color: #007cba;
+            background-color: #f0f8ff;
+        }
+
+        .upload-area.file-selected {
+            border-color: #28a745;
+            background-color: #f8fff9;
+        }
+
+        .upload-area.uploading {
+            border-color: #007cba;
+            background-color: #f0f8ff;
+            cursor: not-allowed;
+        }
+
+        .upload-area.upload-success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .upload-area.upload-error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        button {
+            background-color: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #005a87;
+        }
+
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .choose-file-btn {
+            background-color: transparent;
+            color: #007cba;
+            text-decoration: underline;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .choose-file-btn:hover {
+            color: #005a87;
+        }
+
+        a {
+            color: #007cba;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            min-height: 20px;
+        }
+
+        .file-info.selected {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .file-info.uploading {
+            color: #007cba;
+        }
+
+        .file-info.success {
+            color: #28a745;
+        }
+
+        .file-info.error {
+            color: #dc3545;
+        }
+
+        .upload-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .upload-status.info {
+            background-color: #cce7ff;
+            color: #0066cc;
+            border: 1px solid #99d6ff;
+        }
+
+        .upload-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .upload-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .process-btn {
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .process-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* Debug info styles */
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5vh auto;
+            padding: 20px;
+            border: none;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            color: #721c24;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .modal-body {
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .modal-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            min-width: 100px;
+        }
+
+        .modal-btn-primary {
+            background-color: #007cba;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background-color: #005a87;
+        }
+
+        .modal-btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .modal-btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .missing-fields {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 8px 0;
+            text-align: left;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .missing-fields ul {
+            margin: 3px 0;
+            padding-left: 16px;
+        }
+
+        .missing-fields li {
+            margin: 1px 0;
+            color: #721c24;
+            font-size: 12px;
+        }
+
+        #feedback-message {
+            border-radius: 4px;
+            display: none;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        #feedback-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        #feedback-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        #feedback-message.info {
+            background-color: #cce7ff;
+            color: #0066cc;
+            border: 1px solid #99d6ff;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Section - Shows first -->
+    <div id="auth-section" class="views" style="display: block;">
+        <h2>Administrator Access</h2>
+        <p>Please login with your administrator credentials to access file upload functionality.</p>
+        <div style="max-width: 300px; margin: 0 auto;">
+            <input type="email" id="admin-email" placeholder="Administrator Email" style="width: 100%; margin: 5px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <input type="password" id="admin-password" placeholder="Password" style="width: 100%; margin: 5px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <div style="display: flex; gap: 10px; margin: 10px 0;">
+                <button onclick="loginAdmin()" style="flex: 1;">Login</button>
+                <button onclick="registerAdmin()" style="flex: 1; background: #28a745;">Register</button>
+            </div>
+            <div id="auth-error" style="color: red; font-size: 12px; margin-top: 5px;"></div>
+            <div id="auth-success" style="color: green; font-size: 12px; margin-top: 5px;"></div>
+        </div>
     </div>
 
-    <div class="upload-section">
-        <h2>Upload Monthly Utilization Data</h2>
-        <p>Upload the Excel file containing monthly billable hours and utilization for all employees.</p>
-        <a href="#">Download Template</a>
-        <div class="upload-area">Drag and drop file here or <button>Choose File</button></div>
-        <button style="margin-top: 10px;">Process Utilization File</button>
+    <!-- Data Import Section - Hidden initially -->
+    <section id="data-import" class="views" style="display: none;">
+        <!-- User info bar -->
+        <div id="user-info" style="background: #e9f7ff; padding: 10px; border-radius: 4px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <span>Logged in as: <strong id="user-email"></strong></span>
+            <button onclick="logoutAdmin()" style="background: #dc3545; padding: 5px 10px; font-size: 12px;">Logout</button>
+        </div>
+        
+        <h1>Settings: Data Import</h1>
+        <p>A secure and simple interface for authorized administrators to upload the two core data source files.</p>
+        
+        <div class="upload-section">
+            <h2>Upload CoE Member Data</h2>
+            <p>Upload the Excel file containing information for all CoE members. The file must contain the required columns (LDAP, Oracle ID, etc.).</p>
+            <a href="https://storage.googleapis.com/management-tool-template/members_template.csv" download>Download Template</a>
+            
+            <div class="upload-area" id="member-upload-area" onclick="handleUploadAreaClick('member')">
+                <div class="upload-text">
+                    Drag and drop file here or <button type="button" class="choose-file-btn" onclick="event.stopPropagation(); document.getElementById('member-file').click()">Choose File</button>
+                </div>
+                <div class="file-info" id="member-file-info">No file selected</div>
+                <div class="upload-status" id="member-upload-status"></div>
+            </div>
+            
+            <input type="file" id="member-file" class="file-input" accept=".csv" onchange="handleFileSelection('member', this)" />
+            <button type="button" class="process-btn" id="member-process-btn" onclick="processMemberFile()" disabled>Process Member File</button>
+            
+            <!-- Debug info -->
+            <div class="debug-info" id="member-debug" style="display: none;">
+                Debug: <span id="member-debug-text">No file selected</span>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h2>Upload Monthly Utilization Data</h2>
+            <p>Upload the Excel file containing monthly billable hours and utilization for all employees.</p>
+            <a href="https://storage.googleapis.com/management-tool-template/utilization_edited_template_2025-01.csv" download>Download Template</a>
+            
+            <div class="upload-area" id="utilization-upload-area" onclick="handleUploadAreaClick('utilization')">
+                <div class="upload-text">
+                    Drag and drop file here or <button type="button" class="choose-file-btn" onclick="event.stopPropagation(); document.getElementById('utilization-file').click()">Choose File</button>
+                </div>
+                <div class="file-info" id="utilization-file-info">No file selected</div>
+                <div class="upload-status" id="utilization-upload-status"></div>
+            </div>
+            
+            <input type="file" id="utilization-file" class="file-input" accept=".csv" onchange="handleFileSelection('utilization', this)" />
+            <button type="button" class="process-btn" id="utilization-process-btn" onclick="processUtilizationFile()" disabled>Process Utilization File</button>
+            
+            <!-- Debug info -->
+            <div class="debug-info" id="utilization-debug" style="display: none;">
+                Debug: <span id="utilization-debug-text">No file selected</span>
+            </div>
+        </div>
+        
+        <div id="feedback-message" style="margin-top: 20px;">
+            <!-- Feedback messages will appear here -->
+        </div>
+
+        <!-- Toggle debug button -->
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="toggleDebugMode()" style="background: #6c757d; font-size: 12px;">Toggle Debug Info</button>
+        </div>
+    </section>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="color: #155724;">
+                ✅ Upload Successful!
+            </div>
+            <div class="modal-body">
+                <p><strong>File has been uploaded successfully!</strong></p>
+                <div id="success-details" style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; padding: 10px; margin: 10px 0; text-align: left; font-size: 13px;">
+                    <!-- Success details will be populated here -->
+                </div>
+                <p>The file is now available in Firebase Storage and ready for processing.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-primary" onclick="closeSuccessModal()">Continue</button>
+            </div>
+        </div>
     </div>
-    <div id="feedback-message" style="margin-top: 20px; padding: 10px;">
-        <!-- Feedback messages will appear here -->
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                ⚠️ Invalid CSV File Format
+            </div>
+            <div class="modal-body">
+                <p><strong>CSV file format is incorrect. Missing the following required fields:</strong></p>
+                <div id="missing-fields-container" class="missing-fields">
+                    <ul id="missing-fields-list">
+                        <!-- Missing fields will be populated here -->
+                    </ul>
+                </div>
+                <p>Please download the template to reference the correct format.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-primary" onclick="downloadTemplate()">Download Template</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
     </div>
-</section>
+
+    <script>
+        console.log('Script starting to load...');
+        
+        // Bypass Firebase config error for now
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('firebase-config.js')) {
+                e.preventDefault();
+                console.log('Firebase config error bypassed');
+                return false;
+            }
+        });
+        
+        // Debug mode toggle
+        let debugMode = false;
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            document.getElementById('member-debug').style.display = debugMode ? 'block' : 'none';
+            document.getElementById('utilization-debug').style.display = debugMode ? 'block' : 'none';
+            console.log('Debug mode:', debugMode);
+        }
+
+        // Update debug info
+        function updateDebugInfo(fileType, message) {
+            if (debugMode) {
+                const debugElement = document.getElementById(`${fileType}-debug-text`);
+                if (debugElement) {
+                    debugElement.textContent = message;
+                }
+            }
+            console.log(`[${fileType.toUpperCase()} DEBUG]:`, message);
+        }
+        
+        // Required columns for validation
+        const REQUIRED_MEMBER_COLUMNS = [
+            'LDAP', 'Oracle ID', 'Employee Email', 'Employee Name', 'Level',
+            'Practice', 'Location', 'CoE Practice', 'Group', 'Report Manager Email', 
+            'Report Manager', 'Hinext Manager Email', 'Hinext Manager', 'New HiNext Mgr', 'New HiNext Mgr Email',
+            'Status'
+        ];
+
+        const REQUIRED_UTILIZATION_COLUMNS = [
+            'Oracle ID', 'Employee Email', 'Name', 'Level', 'Start date',
+            'Project Start date', 'Project Roll-off', 'Location', 'BU',
+            'Subgroup', 'CoE Practice', 'SWAT', 'Billable hours',
+            'Time off', 'Available Hours', '%Billable', 'Logged hours',
+            'Timesheet status', 'Bench aging Oracle', 'Oracle staffed Project',
+            'Unpaid- Maternity leave', 'Status'
+        ];
+
+        // ==========================================
+        // FILE SELECTION HANDLERS
+        // ==========================================
+        
+        function handleUploadAreaClick(fileType) {
+            console.log(`Upload area clicked for: ${fileType}`);
+            const fileInput = document.getElementById(`${fileType}-file`);
+            if (fileInput) {
+                fileInput.click();
+            } else {
+                console.error(`File input not found: ${fileType}-file`);
+            }
+        }
+
+        function handleFileSelection(fileType, inputElement) {
+            console.log(`File selection handler called for: ${fileType}`);
+            updateDebugInfo(fileType, 'File selection handler called');
+            
+            const file = inputElement.files[0];
+            const fileInfoElement = document.getElementById(`${fileType}-file-info`);
+            const processBtn = document.getElementById(`${fileType}-process-btn`);
+            
+            if (file) {
+                console.log(`File selected: ${file.name} (${file.size} bytes)`);
+                updateDebugInfo(fileType, `File selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                
+                // Update UI to show file is selected
+                const fileSizeText = (file.size / 1024 / 1024).toFixed(2);
+                fileInfoElement.textContent = `Selected: ${file.name} (${fileSizeText} MB)`;
+                updateUploadAreaStatus(fileType, 'selected');
+                
+                // Enable process button
+                if (processBtn) {
+                    processBtn.disabled = false;
+                    console.log(`Process button enabled for: ${fileType}`);
+                }
+            } else {
+                console.log(`No file selected for: ${fileType}`);
+                updateDebugInfo(fileType, 'No file selected');
+                updateUploadAreaStatus(fileType, 'reset');
+                
+                // Disable process button
+                if (processBtn) {
+                    processBtn.disabled = true;
+                }
+            }
+        }
+
+        // ==========================================
+        // CSV VALIDATION FUNCTIONS
+        // ==========================================
+        
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length === 0) return { headers: [], rows: [] };
+            
+            // Parse headers (first line)
+            const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+            
+            // Parse rows
+            const rows = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const row = lines[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+                    rows.push(row);
+                }
+            }
+            
+            return { headers, rows };
+        }
+
+        function validateCSVColumns(headers, requiredColumns, fileType) {
+            const missingColumns = [];
+            const extraColumns = [];
+            
+            // Check for missing required columns
+            requiredColumns.forEach(required => {
+                if (!headers.includes(required)) {
+                    missingColumns.push(required);
+                }
+            });
+            
+            // Check for extra columns (optional - you might want to allow extra columns)
+            headers.forEach(header => {
+                if (!requiredColumns.includes(header)) {
+                    extraColumns.push(header);
+                }
+            });
+            
+            return {
+                isValid: missingColumns.length === 0,
+                missingColumns,
+                extraColumns,
+                message: missingColumns.length === 0 
+                    ? `✅ ${fileType} CSV format is valid!` 
+                    : `❌ Missing required columns in ${fileType}: ${missingColumns.join(', ')}`
+            };
+        }
+
+        function validateCSVFile(file, requiredColumns, fileType) {
+            return new Promise((resolve, reject) => {
+                // Check file extension
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    reject(new Error('Please select a CSV file only.'));
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const csvText = e.target.result;
+                        const { headers, rows } = parseCSV(csvText);
+                        
+                        if (headers.length === 0) {
+                            reject(new Error('CSV file appears to be empty or invalid.'));
+                            return;
+                        }
+                        
+                        const validation = validateCSVColumns(headers, requiredColumns, fileType);
+                        
+                        resolve({
+                            validation,
+                            headers,
+                            rows,
+                            totalRows: rows.length
+                        });
+                    } catch (error) {
+                        reject(new Error('Error parsing CSV file: ' + error.message));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error('Error reading file.'));
+                };
+                
+                reader.readAsText(file);
+            });
+        }
+
+        // ==========================================
+        // UI STATUS UPDATE FUNCTIONS
+        // ==========================================
+        
+        function updateUploadAreaStatus(fileType, status, message = '') {
+            console.log(`Updating upload area status: ${fileType} -> ${status}`);
+            
+            const uploadArea = document.getElementById(`${fileType}-upload-area`);
+            const fileInfo = document.getElementById(`${fileType}-file-info`);
+            const uploadStatus = document.getElementById(`${fileType}-upload-status`);
+            const processBtn = document.getElementById(`${fileType}-process-btn`);
+            
+            if (!uploadArea || !fileInfo || !uploadStatus || !processBtn) {
+                console.error('Some UI elements not found for', fileType);
+                return;
+            }
+            
+            // Reset classes
+            uploadArea.className = 'upload-area';
+            fileInfo.className = 'file-info';
+            uploadStatus.className = 'upload-status';
+            uploadStatus.style.display = 'none';
+            
+            switch (status) {
+                case 'selected':
+                    uploadArea.classList.add('file-selected');
+                    fileInfo.classList.add('selected');
+                    processBtn.disabled = false;
+                    updateDebugInfo(fileType, 'Status: File selected, button enabled');
+                    break;
+                case 'uploading':
+                    uploadArea.classList.add('uploading');
+                    fileInfo.classList.add('uploading');
+                    uploadStatus.classList.add('info');
+                    uploadStatus.style.display = 'block';
+                    uploadStatus.textContent = message;
+                    processBtn.disabled = true;
+                    processBtn.textContent = 'Processing...';
+                    updateDebugInfo(fileType, 'Status: Uploading, button disabled');
+                    break;
+                case 'success':
+                    uploadArea.classList.add('upload-success');
+                    fileInfo.classList.add('success');
+                    uploadStatus.classList.add('success');
+                    uploadStatus.style.display = 'block';
+                    uploadStatus.textContent = '✅ ' + message;
+                    processBtn.disabled = false;
+                    processBtn.textContent = fileType === 'member' ? 'Process Member File' : 'Process Utilization File';
+                    updateDebugInfo(fileType, 'Status: Success');
+                    break;
+                case 'error':
+                    uploadArea.classList.add('upload-error');
+                    fileInfo.classList.add('error');
+                    uploadStatus.classList.add('error');
+                    uploadStatus.style.display = 'block';
+                    uploadStatus.textContent = '❌ ' + message;
+                    processBtn.disabled = false;
+                    processBtn.textContent = fileType === 'member' ? 'Process Member File' : 'Process Utilization File';
+                    updateDebugInfo(fileType, 'Status: Error - ' + message);
+                    break;
+                case 'reset':
+                    fileInfo.textContent = 'No file selected';
+                    uploadStatus.style.display = 'none';
+                    processBtn.disabled = true;
+                    processBtn.textContent = fileType === 'member' ? 'Process Member File' : 'Process Utilization File';
+                    updateDebugInfo(fileType, 'Status: Reset, button disabled');
+                    break;
+            }
+        }
+
+        // ==========================================
+        // FIREBASE STORAGE UPLOAD FUNCTION
+        // ==========================================
+        
+        async function uploadFileToStorage(file, folderPath, validationResult) {
+            try {
+                if (!window.firebaseAuth || !window.firebaseAuth.currentUser) {
+                    throw new Error('User not authenticated. Please login first.');
+                }
+
+                showFeedback('Uploading file to Firebase Storage...', 'info');
+                
+                // Use original filename (no timestamp prefix)
+                const fileName = file.name;
+                const storageRef = window.firebaseUpload.ref(window.firebaseStorage, `${folderPath}/${fileName}`);
+                
+                // Create upload task with metadata
+                const uploadTask = window.firebaseUpload.uploadBytesResumable(storageRef, file, {
+                    customMetadata: {
+                        'uploadedBy': window.firebaseAuth.currentUser.email,
+                        'uploadedAt': new Date().toISOString(),
+                        'totalRows': validationResult.totalRows.toString(),
+                        'totalColumns': validationResult.headers.length.toString(),
+                        'fileType': folderPath.includes('member') ? 'member-data' : 'utilization-data'
+                    }
+                });
+                
+                // Handle upload progress and completion
+                return new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        // Progress function
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            const fileType = folderPath.includes('member') ? 'member' : 'utilization';
+                            updateUploadAreaStatus(fileType, 'uploading', `Upload progress: ${progress.toFixed(1)}%`);
+                            console.log(`Upload is ${progress}% done`);
+                        }, 
+                        // Error function
+                        (error) => {
+                            console.error('Upload error:', error);
+                            const fileType = folderPath.includes('member') ? 'member' : 'utilization';
+                            let errorMessage = 'Upload failed: ';
+                            
+                            switch (error.code) {
+                                case 'storage/unauthorized':
+                                    errorMessage += 'You do not have permission to upload files.';
+                                    break;
+                                case 'storage/canceled':
+                                    errorMessage += 'Upload was canceled.';
+                                    break;
+                                case 'storage/unknown':
+                                    errorMessage += 'Unknown error occurred. Please try again.';
+                                    break;
+                                default:
+                                    errorMessage += error.message;
+                            }
+                            
+                            updateUploadAreaStatus(fileType, 'error', errorMessage);
+                            reject(error);
+                        }, 
+                        // Success function
+                        async () => {
+                            try {
+                                const downloadURL = await window.firebaseUpload.getDownloadURL(uploadTask.snapshot.ref);
+                                
+                                // Update UI to success state
+                                const fileType = folderPath.includes('member') ? 'member' : 'utilization';
+                                updateUploadAreaStatus(fileType, 'success', `File uploaded successfully! (${validationResult.totalRows} rows)`);
+                                
+                                // Show success modal
+                                showSuccessModal({
+                                    fileName: fileName,
+                                    originalName: file.name,
+                                    folderPath: folderPath,
+                                    totalRows: validationResult.totalRows,
+                                    totalColumns: validationResult.headers.length,
+                                    downloadURL: downloadURL,
+                                    uploadedBy: window.firebaseAuth.currentUser.email
+                                });
+                                
+                                console.log('File uploaded successfully:', {
+                                    fileName: fileName,
+                                    downloadURL: downloadURL,
+                                    metadata: validationResult
+                                });
+                                
+                                resolve({
+                                    fileName,
+                                    downloadURL,
+                                    metadata: validationResult
+                                });
+                            } catch (error) {
+                                const fileType = folderPath.includes('member') ? 'member' : 'utilization';
+                                updateUploadAreaStatus(fileType, 'error', 'Failed to get download URL');
+                                reject(error);
+                            }
+                        }
+                    );
+                });
+                
+            } catch (error) {
+                showFeedback('Upload preparation failed: ' + error.message, 'error');
+                console.error('Upload error:', error);
+                throw error;
+            }
+        }
+
+        // ==========================================
+        // PROCESS FUNCTIONS
+        // ==========================================
+        
+        window.processMemberFile = async function() {
+            console.log('=== PROCESSING MEMBER FILE ===');
+            const fileInput = document.getElementById('member-file');
+            const file = fileInput ? fileInput.files[0] : null;
+            
+            console.log('File input element:', fileInput);
+            console.log('Selected file:', file);
+            updateDebugInfo('member', `Process started. File: ${file ? file.name : 'NONE'}`);
+            
+            if (!file) {
+                updateUploadAreaStatus('member', 'error', 'Please select a CSV file first');
+                updateDebugInfo('member', 'ERROR: No file selected');
+                return;
+            }
+
+            // Start processing
+            updateUploadAreaStatus('member', 'uploading', 'Validating CSV file...');
+            updateDebugInfo('member', 'Starting CSV validation...');
+            
+            try {
+                const result = await validateCSVFile(file, REQUIRED_MEMBER_COLUMNS, 'Member Data');
+                console.log('Validation result:', result);
+                updateDebugInfo('member', `Validation complete. Valid: ${result.validation.isValid}`);
+                
+                if (!result.validation.isValid) {
+                    updateUploadAreaStatus('member', 'error', 'CSV validation failed');
+                    showErrorModal(result.validation.missingColumns, 'member');
+                    updateDebugInfo('member', 'Validation failed - showing error modal');
+                    return;
+                }
+                
+                // Update to uploading status
+                updateUploadAreaStatus('member', 'uploading', 'Uploading to Firebase Storage...');
+                updateDebugInfo('member', 'Starting upload to Firebase...');
+                
+                // Upload to Firebase Storage
+                await uploadFileToStorage(file, 'member-data', result);
+                updateDebugInfo('member', 'Upload completed successfully');
+                
+            } catch (error) {
+                console.error('Process error:', error);
+                updateUploadAreaStatus('member', 'error', 'Upload failed: ' + error.message);
+                updateDebugInfo('member', `ERROR: ${error.message}`);
+            }
+        };
+
+        window.processUtilizationFile = async function() {
+            console.log('=== PROCESSING UTILIZATION FILE ===');
+            const fileInput = document.getElementById('utilization-file');
+            const file = fileInput ? fileInput.files[0] : null;
+            
+            console.log('File input element:', fileInput);
+            console.log('Selected file:', file);
+            updateDebugInfo('utilization', `Process started. File: ${file ? file.name : 'NONE'}`);
+            
+            if (!file) {
+                updateUploadAreaStatus('utilization', 'error', 'Please select a CSV file first');
+                updateDebugInfo('utilization', 'ERROR: No file selected');
+                return;
+            }
+
+            // Start processing
+            updateUploadAreaStatus('utilization', 'uploading', 'Validating CSV file...');
+            updateDebugInfo('utilization', 'Starting CSV validation...');
+            
+            try {
+                const result = await validateCSVFile(file, REQUIRED_UTILIZATION_COLUMNS, 'Utilization Data');
+                console.log('Validation result:', result);
+                updateDebugInfo('utilization', `Validation complete. Valid: ${result.validation.isValid}`);
+                
+                if (!result.validation.isValid) {
+                    updateUploadAreaStatus('utilization', 'error', 'CSV validation failed');
+                    showErrorModal(result.validation.missingColumns, 'utilization');
+                    updateDebugInfo('utilization', 'Validation failed - showing error modal');
+                    return;
+                }
+                
+                // Update to uploading status
+                updateUploadAreaStatus('utilization', 'uploading', 'Uploading to Firebase Storage...');
+                updateDebugInfo('utilization', 'Starting upload to Firebase...');
+                
+                // Upload to Firebase Storage
+                await uploadFileToStorage(file, 'utilization-data', result);
+                updateDebugInfo('utilization', 'Upload completed successfully');
+                
+            } catch (error) {
+                console.error('Process error:', error);
+                updateUploadAreaStatus('utilization', 'error', 'Upload failed: ' + error.message);
+                updateDebugInfo('utilization', `ERROR: ${error.message}`);
+            }
+        };
+
+        // ==========================================
+        // DRAG AND DROP FUNCTIONALITY
+        // ==========================================
+        
+        function setupDragAndDrop(uploadArea, fileInput, fileType) {
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    // Trigger change event manually
+                    handleFileSelection(fileType, fileInput);
+                }
+            });
+        }
+
+        // ==========================================
+        // AUTHENTICATION FUNCTIONS
+        // ==========================================
+        
+        window.loginAdmin = async function() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorDiv = document.getElementById('auth-error');
+            const successDiv = document.getElementById('auth-success');
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password.';
+                return;
+            }
+
+            try {
+                const userCredential = await window.firebaseAuthMethods.signInWithEmailAndPassword(
+                    window.firebaseAuth, email, password
+                );
+                
+                showDataImportSection(userCredential.user);
+                errorDiv.textContent = '';
+                successDiv.textContent = '';
+            } catch (error) {
+                errorDiv.textContent = 'Login failed: ' + error.message;
+                successDiv.textContent = '';
+            }
+        };
+
+        window.registerAdmin = async function() {
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorDiv = document.getElementById('auth-error');
+            const successDiv = document.getElementById('auth-success');
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password.';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+
+            try {
+                const userCredential = await window.firebaseAuthMethods.createUserWithEmailAndPassword(
+                    window.firebaseAuth, email, password
+                );
+                
+                successDiv.textContent = 'Account created successfully! Logging you in...';
+                errorDiv.textContent = '';
+                showDataImportSection(userCredential.user);
+            } catch (error) {
+                errorDiv.textContent = 'Registration failed: ' + error.message;
+                successDiv.textContent = '';
+            }
+        };
+
+        window.logoutAdmin = async function() {
+            try {
+                await window.firebaseAuthMethods.signOut(window.firebaseAuth);
+                showAuthSection();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+
+        function showAuthSection() {
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('data-import').style.display = 'none';
+        }
+
+        function showDataImportSection(user) {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('data-import').style.display = 'block';
+            document.getElementById('user-email').textContent = user.email;
+            
+            // Initialize drag and drop after section is shown
+            setTimeout(initializeDragAndDrop, 100);
+        }
+
+        function initializeDragAndDrop() {
+            const memberUploadArea = document.getElementById('member-upload-area');
+            const utilizationUploadArea = document.getElementById('utilization-upload-area');
+            const memberFileInput = document.getElementById('member-file');
+            const utilizationFileInput = document.getElementById('utilization-file');
+            
+            if (memberUploadArea && memberFileInput) {
+                setupDragAndDrop(memberUploadArea, memberFileInput, 'member');
+                console.log('Drag and drop initialized for member upload area');
+            }
+            
+            if (utilizationUploadArea && utilizationFileInput) {
+                setupDragAndDrop(utilizationUploadArea, utilizationFileInput, 'utilization');
+                console.log('Drag and drop initialized for utilization upload area');
+            }
+        }
+
+        // ==========================================
+        // MODAL FUNCTIONS
+        // ==========================================
+        
+        function showSuccessModal(uploadDetails) {
+            const modal = document.getElementById('successModal');
+            const detailsDiv = document.getElementById('success-details');
+            
+            // Create success details HTML
+            const details = `
+                <div style="margin-bottom: 8px;"><strong>File Name:</strong> ${uploadDetails.fileName}</div>
+                <div style="margin-bottom: 8px;"><strong>Location:</strong> ${uploadDetails.folderPath}/</div>
+                <div style="margin-bottom: 8px;"><strong>Data Rows:</strong> ${uploadDetails.totalRows}</div>
+                <div style="margin-bottom: 8px;"><strong>Columns:</strong> ${uploadDetails.totalColumns}</div>
+                <div style="margin-bottom: 8px;"><strong>Uploaded By:</strong> ${uploadDetails.uploadedBy}</div>
+                <div style="margin-bottom: 8px;"><strong>Upload Time:</strong> ${new Date().toLocaleString()}</div>
+            `;
+            
+            detailsDiv.innerHTML = details;
+            modal.style.display = 'block';
+        }
+
+        window.closeSuccessModal = function() {
+            document.getElementById('successModal').style.display = 'none';
+            
+            // Reset upload areas to initial state
+            updateUploadAreaStatus('member', 'reset');
+            updateUploadAreaStatus('utilization', 'reset');
+            
+            // Clear file inputs
+            document.getElementById('member-file').value = '';
+            document.getElementById('utilization-file').value = '';
+        };
+
+        function showErrorModal(missingFields, fileType) {
+            const modal = document.getElementById('errorModal');
+            const fieldsList = document.getElementById('missing-fields-list');
+            
+            // Clear previous fields
+            fieldsList.innerHTML = '';
+            
+            // Add missing fields to list
+            missingFields.forEach(field => {
+                const li = document.createElement('li');
+                li.textContent = field;
+                fieldsList.appendChild(li);
+            });
+            
+            // Store file type for template download
+            modal.setAttribute('data-file-type', fileType);
+            
+            // Show modal
+            modal.style.display = 'block';
+            
+            // Hide any existing feedback
+            document.getElementById('feedback-message').style.display = 'none';
+        }
+
+        window.closeModal = function() {
+            document.getElementById('errorModal').style.display = 'none';
+        };
+
+        window.downloadTemplate = function() {
+            const modal = document.getElementById('errorModal');
+            const fileType = modal.getAttribute('data-file-type');
+            
+            if (fileType === 'member') {
+                window.open('https://storage.googleapis.com/management-tool-template/members_template.csv', '_blank');
+            } else if (fileType === 'utilization') {
+                window.open('https://storage.googleapis.com/management-tool-template/utilization_edited_template_2025-01.csv', '_blank');
+            }
+            
+            window.closeModal();
+        };
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const errorModal = document.getElementById('errorModal');
+            const successModal = document.getElementById('successModal');
+            
+            if (event.target === errorModal) {
+                window.closeModal();
+            }
+            if (event.target === successModal) {
+                window.closeSuccessModal();
+            }
+        };
+
+        function showFeedback(message, type) {
+            const feedbackDiv = document.getElementById('feedback-message');
+            if (feedbackDiv) {
+                feedbackDiv.textContent = message;
+                feedbackDiv.className = type;
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    feedbackDiv.style.display = 'none';
+                    feedbackDiv.className = '';
+                }, 5000);
+            }
+        }
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        
+        // Wait for DOM to be ready, then check auth state
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Initializing...');
+            
+            // Wait a bit for Firebase to initialize
+            setTimeout(() => {
+                if (window.firebaseAuth) {
+                    window.firebaseAuthMethods.onAuthStateChanged(window.firebaseAuth, (user) => {
+                        if (user) {
+                            showDataImportSection(user);
+                        } else {
+                            showAuthSection();
+                        }
+                    });
+                } else {
+                    console.log('Firebase auth not available yet, showing auth section');
+                    showAuthSection();
+                }
+            }, 500);
+        });
+
+        console.log('Script loaded successfully - all functions defined');
+    </script>
+</body>
+</html>
