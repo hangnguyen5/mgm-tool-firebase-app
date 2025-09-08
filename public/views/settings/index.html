@@ -1,4 +1,150 @@
-<section id="settings" class="views">
-    <h1>Settings</h1>
-    <p>The administrative area for application management.</p>
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - CoE Management Platform</title>
+    
+    <!-- Firebase SDK v10 -->
+    <script type="module">
+        // Use existing Firebase instances from the main app instead of reinitializing
+        // Firebase is already initialized in the main app
+        
+        // Wait for global Firebase instances to be available
+        function waitForFirebase() {
+            return new Promise((resolve) => {
+                const checkFirebase = () => {
+                    if (window.auth && window.db && window.firestoreModule) {
+                        console.log('🔥 Firebase instances found, using existing initialization');
+                        resolve();
+                    } else {
+                        setTimeout(checkFirebase, 100);
+                    }
+                };
+                checkFirebase();
+            });
+        }
+        
+        // Make waitForFirebase available globally
+        window.waitForFirebase = waitForFirebase;
+        
+        console.log('🔥 Admin page Firebase setup complete');
+    </script>
+    
+    <!-- Link to main stylesheet -->
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    
+    <!-- Admin page specific overrides -->
+    <style>
+        body {
+            background-color: #f5f7fa !important;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Header -->
+        <div class="admin-header">
+            <h1>🛠️ Admin Settings</h1>
+            <p>Manage users and system settings for CoE Management Platform</p>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loading-state" class="admin-card">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 10px;">Initializing admin panel...</p>
+            </div>
+        </div>
+        
+        <!-- Admin Content -->
+        <div id="admin-content" class="hidden">
+            <!-- System Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="admin-users">0</div>
+                    <div class="stat-label">Admin Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-employees">0</div>
+                    <div class="stat-label">Employees</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="recent-logins">0</div>
+                    <div class="stat-label">Recent Logins</div>
+                </div>
+            </div>
+            
+            <!-- Grant Admin Section -->
+            <div class="admin-card">
+                <h3>Grant Admin Privileges</h3>
+                <p>Grant admin privileges to a user by entering their email address.</p>
+                
+                <form id="grant-admin-form">
+                    <div class="form-group">
+                        <label for="admin-email">User Email:</label>
+                        <input type="email" id="admin-email" placeholder="user@example.com" required>
+                    </div>
+                    <button type="submit" class="admin-button">
+                        <span id="grant-admin-spinner" class="loading-spinner hidden"></span>
+                        Make Admin
+                    </button>
+                </form>
+                
+                <div id="admin-message"></div>
+            </div>
+
+            <!-- Users List Section -->
+            <div class="admin-card">
+                <h3>User Management</h3>
+                <p>View and manage all registered users</p>
+                
+                <button id="refresh-users-btn" class="admin-button" type="button">
+                    <span id="refresh-spinner" class="loading-spinner hidden"></span>
+                    Refresh Users
+                </button>
+                
+                <div id="users-container">
+                    <div id="users-loading" class="loading hidden">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 10px;">Loading users...</p>
+                    </div>
+                    
+                    <table id="users-table" class="admin-table hidden">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Display Name</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Last Sign In</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="users-message"></div>
+            </div>
+        </div>
+        
+        <!-- Authentication Error -->
+        <div id="auth-error" class="admin-card hidden">
+            <div class="message error">
+                <strong>Access Denied:</strong> You must be logged in as an administrator to access this page.
+            </div>
+            <button class="admin-button" onclick="window.location.href = '/'">Return to Home</button>
+        </div>
+    </div>
+
+    <!-- Load Admin Panel JavaScript -->
+    <script src="../../js/services/admin.js"></script>
+</body>
+</html>

@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Directory</title>
+    
+    <!-- Import Auth Guard -->
+    <script type="module">
+        // Import auth guard to ensure user is logged in
+        import authGuard from '../../js/utils/authGuard.js';
+        
+        // Ensure authentication before allowing access to this page
+        document.addEventListener('DOMContentLoaded', () => {
+            // If not authenticated, the auth guard will handle redirection
+            if (!authGuard.requireAuth()) {
+                console.log('Access blocked - authentication required');
+                return;
+            }
+            
+            console.log('User authenticated - Member Directory access granted');
+        });
+    </script>
+    
     <style>
         .views {
             max-width: 1200px;
