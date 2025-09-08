@@ -180,7 +180,15 @@ function initializeAuth() {
                 loginModal.style.display = 'none';
             }
             hideLoginOverlay();
-            
+
+            // Fetch user role from Firestore
+            fetchUserRole(user.uid).then(role => {
+                window.currentUserRole = role;
+                console.log('👤 User role:', role);
+                // Optionally, trigger UI updates based on role here
+            }).catch(err => {
+                console.error('❌ Error fetching user role:', err);
+            });
         } else {
             // User is signed out
             console.log('📤 User signed out');
@@ -190,8 +198,70 @@ function initializeAuth() {
             
             // Show login overlay to force authentication
             showLoginOverlay();
+            window.currentUserRole = null;
         }
     });
+
+    // Fetch user role from Firestore
+    async function fetchUserRole(uid) {
+        try {
+            // Check for Firestore availability with multiple methods
+            if (!window.management_db && !window.firestoreModule) {
+                console.warn('⚠️ Management database not available, using default role');
+                return 'subscriber';
+            }
+            
+            // Use the same pattern as projects: get database reference
+            const { getFirestore } = window.firestoreModule;
+            const managementDb = window.management_db || getFirestore(window.firebaseApp, 'management-data');
+            const { doc, getDoc, setDoc } = window.firestoreModule;
+            
+            const userDocRef = doc(managementDb, 'management-users', uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            if (userDoc.exists()) {
+                return userDoc.data().role || 'subscriber';
+            }
+            
+            // If user document doesn't exist, call Cloud Function to create it
+            try {
+                console.log('📞 User not found in management-users, calling Cloud Function to create record...');
+                
+                // Check if Firebase Functions is available
+                if (window.functions && window.functionsModule) {
+                    const { httpsCallable } = window.functionsModule;
+                    const handleUserSignIn = httpsCallable(window.functions, 'handleUserSignIn');
+                    const result = await handleUserSignIn();
+                    console.log('✅ Cloud Function result:', result.data);
+                    return result.data.role || 'subscriber';
+                } else {
+                    // Fallback: create user document directly
+                    await setDoc(userDocRef, {
+                        email: window.getCurrentUser()?.email || '',
+                        displayName: window.getCurrentUser()?.displayName || '',
+                        role: 'subscriber',
+                        createdAt: new Date(),
+                        lastSignIn: new Date()
+                    });
+                    return 'subscriber';
+                }
+            } catch (functionError) {
+                console.error('❌ Error calling Cloud Function:', functionError);
+                // Fallback: create user document directly
+                await setDoc(userDocRef, {
+                    email: window.getCurrentUser()?.email || '',
+                    displayName: window.getCurrentUser()?.displayName || '',
+                    role: 'subscriber',
+                    createdAt: new Date(),
+                    lastSignIn: new Date()
+                });
+                return 'subscriber';
+            }
+        } catch (error) {
+            console.error('❌ Error fetching user role:', error);
+            return 'subscriber'; // Return default role instead of throwing
+        }
+    }
 
     // Event Listeners
     if (loginButton) {
